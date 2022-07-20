@@ -16,6 +16,8 @@ class Profile(BaseMixins, models.Model):
     birth = models.DateField(null=True)
     gender = models.CharField(max_length=1, null=True)
 
+    bucket = models.ManyToManyField('products.Product', through='accounts.Bucket',
+                                    through_fields=('profile', 'product'))
     following = models.ManyToManyField('accounts.Profile', related_name='+')
     follower = models.ManyToManyField('accounts.Profile', related_name='+')
 
@@ -40,10 +42,8 @@ class Point(BaseMixins, models.Model):
     memo = models.CharField(max_length=200)
 
 
-# TODO: Bucket List
-# class Bucket(BaseMixins, models.Model):
-#     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
-#     custom_product = models.ForeignKey('Product')
-#
-#     amount = models.IntegerField()
-#     is_purchase = models.BooleanField(default=False)
+class Bucket(BaseMixins, models.Model):
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
+    amount = models.IntegerField()
+    is_purchase = models.BooleanField(default=False)

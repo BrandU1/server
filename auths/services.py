@@ -24,7 +24,7 @@ def kakao_get_user_info(access_token):
 
 
 def kakao_get_access_token(url, code):
-    redirect_url = settings.BASE_BACKEND_URL + '/api/v1/accounts/kakao/callback/'
+    redirect_url = settings.BASE_BACKEND_URL + '/auth/kakao/callback/'
     data = {
         'grant_type': 'authorization_code',
         'client_id': os.environ.get('KAKAO_REST_API_KEY'),
@@ -43,12 +43,50 @@ def kakao_get_access_token(url, code):
     return access_token
 
 
+def naver_get_access_token(url, code):
+    redirect_url = settings.BASE_BACKEND_URL + '/auth/naver/callback/'
+    params = {
+        'response_type': 'code',
+        'grant_type': 'authorization_code',
+        'client_id': os.environ.get('NAVER_CLIENT_ID'),
+        'client_secret': os.environ.get('NAVER_CLIENT_SECRET'),
+        'redirect_uri': redirect_url,
+        'code': code,
+        'state': 'RANDOM_STATE'
+    }
+
+    response = requests.get(url, params=params)
+
+    if not response.ok:
+        raise ValidationError('naver_code is invalid')
+
+    print(response.text)
+    access_token = response.json().get('access_token')
+
+    return access_token
+
+
+def naver_get_user_info(access_token):
+    url = 'https://openapi.naver.com/v1/nid/me'
+    response = requests.get(url, headers={
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': f'Bearer {access_token}'
+    })
+
+    if not response.ok:
+        raise ValidationError('Failed to obtain user info from Kakao.')
+
+    user_info = response.json()
+
+    return user_info
+
+
 def google_get_access_token(url, code):
     client_id = os.environ.get('GOOGLE_CLIENT_ID')
     client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
     code = code
     grant_type = 'authorization_code'
-    redirection_uri = settings.BASE_BACKEND_URL + "/api/v1/accounts/google/callback/"
+    redirection_uri = settings.BASE_BACKEND_URL + "/auth/google/callback/"
     state = "random_string"
 
     url += \
