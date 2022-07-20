@@ -29,7 +29,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['121.147.38.28', '127.0.0.1']
 
 # Application definition
 
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     # Django Third party Apps
     'rest_framework',
+    'corsheaders',
 
     # Django Custom Apps
     'accounts.apps.AccountsConfig',
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -158,5 +160,16 @@ JWT_AUTH = {
    'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=28),
 }
 
+CORS_ORIGIN_WHITELIST = [
+    # Test 를 위한 설정
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://www.themealways.com',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
 if DEBUG:
     BASE_BACKEND_URL = 'http://localhost:8000'
+else:
+    BASE_BACKEND_URL = 'https://api.themealways.com'
