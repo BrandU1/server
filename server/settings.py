@@ -29,7 +29,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['121.147.38.28', '127.0.0.1']
+ALLOWED_HOSTS = ['api.themealways.com', '3.34.97.255', '127.0.0.1', 'localhost']
 
 # Application definition
 
@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Django Third party Apps
+    'storages',
+    'drf_yasg',
     'rest_framework',
     'corsheaders',
 
@@ -118,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko-kr'
 
 TIME_ZONE = 'UTC'
 
@@ -134,7 +136,6 @@ AUTH_USER_MODEL = 'accounts.User'
 STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -168,6 +169,27 @@ CORS_ORIGIN_WHITELIST = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# SECURE_SSL_REDIRECT = True
+
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+
+# S3 Storage
+DEFAULT_FILE_STORAGE = 'server.storages.MediaStorage'
+STATICFILES_STORAGE = 'server.storages.StaticStorage'
+MEDIAFILES_LOCATION = 'media'
+STATICFILES_LOCATION = 'static'
+
+# AWS Access
+AWS_S3_SECURE_URLS = True
+AWS_S3_REGION_NAME = 'ap-northeast-2'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_ADDRESSING_STYLE = 'virtual'
+
+AWS_S3_ACCESS_KEY_ID = os.environ.get('AMAZON_S3_ACCESS_KEY')
+AWS_S3_SECRET_ACCESS_KEY = os.environ.get('AMAZON_S3_SECRET')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AMAZON_S3_BUCKET')
 
 if DEBUG:
     BASE_BACKEND_URL = 'http://localhost:8000'
