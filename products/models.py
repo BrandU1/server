@@ -8,11 +8,19 @@ class Brand(models.Model):
 
 class MainCategory(models.Model):
     name = models.CharField(max_length=100)
+    backdrop_image = models.ImageField(upload_to='category')
+
+    def __str__(self):
+        return self.name
 
 
 class SubCategory(models.Model):
     main_category = models.ForeignKey('products.MainCategory', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
+    backdrop_image = models.ImageField(upload_to='category')
+
+    def __str__(self):
+        return self.name
 
 
 class Product(models.Model):
