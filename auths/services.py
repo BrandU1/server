@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import os
 import requests
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+
+from accounts.models import User, Platform, Profile
 
 GOOGLE_ACCESS_TOKEN_OBTAIN_URL = 'https://oauth2.googleapis.com/token'
 GOOGLE_USER_INFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'
@@ -74,7 +78,7 @@ def naver_get_user_info(access_token):
     })
 
     if not response.ok:
-        raise ValidationError('Failed to obtain user info from Kakao.')
+        raise ValidationError('Failed to obtain user info from Naver.')
 
     user_info = response.json()
 
@@ -117,3 +121,25 @@ def google_get_user_info(access_token):
     user_info = user_info_response.json()
 
     return user_info
+
+
+def user_create(email: str, nickname: str, profile_image: str | None, platform: str, platform_id: str):
+    user, created = User.objects.get_or_create(
+        username=email,
+        defaults={
+            'email': email,
+        }
+    )
+    if created:
+        user.set_password(platform + platform_id)
+        Platform.objects.create(user=user, platform=platform, platform_id=platform_id)
+        Profile.objects.create(
+            user=user,
+            profile_image=profile_image,
+            nickname=nickname
+        )
+    else:
+        if Platform.objects.filter(platform=platform, platform_id=platform_id).first():
+            return user
+        Platform.objects.create(user=user, platform=platform, platform_id=platform_id)
+    return user

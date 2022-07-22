@@ -3,12 +3,17 @@ from django.db import models
 
 class Brand(models.Model):
     name = models.CharField(max_length=300)
-    logo = models.ImageField(upload_to='brand')
+    logo = models.ImageField(upload_to='brand', null=True, blank=True)
 
 
 class MainCategory(models.Model):
     name = models.CharField(max_length=100)
-    backdrop_image = models.ImageField(upload_to='category')
+    # TODO: backgroundImage null 속성 제거
+    backdrop_image = models.ImageField(upload_to='category', null=True, blank=True)
+
+    @property
+    def sub_categories(self):
+        return self.subcategory_set.all()
 
     def __str__(self):
         return self.name
@@ -17,7 +22,8 @@ class MainCategory(models.Model):
 class SubCategory(models.Model):
     main_category = models.ForeignKey('products.MainCategory', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    backdrop_image = models.ImageField(upload_to='category')
+    # TODO: backgroundImage null 속성 제거
+    backdrop_image = models.ImageField(upload_to='category', null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -27,14 +33,16 @@ class Product(models.Model):
     name = models.CharField(max_length=300)
     brand = models.ForeignKey('products.Brand', on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey('products.SubCategory', on_delete=models.CASCADE)
-    backdrop_image = models.ImageField(upload_to='product/%Y-%m')
+    backdrop_image = models.ImageField(upload_to='product/%Y-%m', null=True, blank=True)
     price = models.IntegerField()
 
 
-class ProductSale(models.Model):
+class Discount(models.Model):
     product = models.OneToOneField('products.Product', on_delete=models.CASCADE)
-    discounted_price = models.IntegerField()
-    sale_ratio = models.IntegerField(default=0)
+    name = models.CharField(max_length=50)
+    description = models.TextField()
+    discount_price = models.IntegerField(default=0)
+    discount_percent = models.IntegerField(default=0)
 
 
 class ProductOption(models.Model):

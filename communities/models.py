@@ -1,6 +1,6 @@
 from django.db import models
 
-from server.mixins import BaseMixins
+from core.mixins import BaseMixins
 
 
 class Post(BaseMixins, models.Model):
