@@ -31,7 +31,7 @@ schema_view = get_schema_view(
         contact=openapi.Contact(name="민준수", email="ceo@themealways.com"),
     ),
     public=True,
-    permission_classes=[permissions.AllowAny,],
+    permission_classes=[permissions.AllowAny],
 )
 
 urlpatterns = [
