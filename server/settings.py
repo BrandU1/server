@@ -143,7 +143,7 @@ MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-    "EXCEPTION_HANDLER": "core.exceptions.handler",
+    "EXCEPTION_HANDLER": "core.exceptions.handler.custom_exception_handler",
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
@@ -162,6 +162,16 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
 
     'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
 }
 
 CORS_ORIGIN_WHITELIST = [

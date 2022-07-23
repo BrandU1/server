@@ -48,10 +48,10 @@ class NaverLoginAPI(APIView):
     def post(self, request, *args, **kwargs):
         access_token = self.request.data['access_token']
         info = naver_get_user_info(access_token=access_token)
-        print(info)
-        user = user_create(email=info['email'], nickname=info['nickname'],
-                           profile_image=info.get('profile_image', None),
-                           platform='NAVER', platform_id=info['id'])
+        account = info['response']
+        user = user_create(email=account['email'], nickname=account['nickname'],
+                           profile_image=account.get('profile_image', None),
+                           platform='NAVER', platform_id=account['id'])
         token = TokenObtainPairSerializer.get_token(user)
         return Response({
             'access_token': str(token.access_token)

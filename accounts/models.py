@@ -12,7 +12,7 @@ class User(AbstractUser):
 class Platform(BaseMixins, models.Model):
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
     platform = models.CharField(max_length=10)
-    platform_id = models.CharField(max_length=30)
+    platform_id = models.CharField(max_length=100)
 
     class Meta:
         constraints = [
