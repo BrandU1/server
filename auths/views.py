@@ -34,6 +34,7 @@ class KakaoLoginAPI(APIView):
                            platform='KAKAO', platform_id=str(info['id']))
         token = TokenObtainPairSerializer.get_token(user)
         return Response({
+            'refresh_token': str(token),
             'access_token': str(token.access_token)
         })
 
@@ -54,6 +55,7 @@ class NaverLoginAPI(APIView):
                            platform='NAVER', platform_id=account['id'])
         token = TokenObtainPairSerializer.get_token(user)
         return Response({
+            'refresh_token': str(token),
             'access_token': str(token.access_token)
         })
 
@@ -62,11 +64,11 @@ class GoogleLoginAPI(APIView):
     def post(self, request, *args, **kwargs):
         access_token = request.body['access_token']
         info = google_get_user_info(access_token=access_token)
-        print(info)
         user = user_create(email=info['email'], nickname=info['nickname'],
                            profile_image=info.get('picture', None),
                            platform='GOOGLE', platform_id='123')
         token = TokenObtainPairSerializer.get_token(user)
         return Response({
+            'refresh_token': str(token),
             'access_token': str(token.access_token)
         })

@@ -35,6 +35,22 @@ class Profile(BaseMixins, models.Model):
     following = models.ManyToManyField('accounts.Profile', related_name='+')
     follower = models.ManyToManyField('accounts.Profile', related_name='+')
 
+    def follow(self, profile):
+        if self.following.filter(profile=profile).exists():
+            raise Exception('')
+        self.following.add(profile)
+
+    def unfollow(self, profile):
+        if self.following.filter(profile=profile).exists():
+            self.following.remove(profile)
+        raise Exception('')
+
+    @classmethod
+    def get_profile_or_exception(cls, profile_id: int):
+        if cls.objects.filter(id=profile_id).exists():
+            return cls.objects.get(id=profile_id)
+        raise Exception('')
+
 
 class Address(BaseMixins, models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
