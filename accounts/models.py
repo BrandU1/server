@@ -25,11 +25,12 @@ class Profile(BaseModel, models.Model):
     user = models.OneToOneField('accounts.User', on_delete=models.CASCADE)
     profile_image = models.ImageField(upload_to='media/%Y/%m/%d')
     nickname = models.CharField(max_length=100, null=True)
+    name = models.CharField(max_length=10, null=True)
     email = models.EmailField(null=True)
-    phone_number = models.CharField(max_length=15)
+    phone_number = models.CharField(max_length=15, null=True)
     birth = models.DateField(null=True)
-    gender = models.CharField(max_length=1, null=True)
-    description = models.TextField()
+    social_link = models.CharField(max_length=30, null=True)
+    description = models.TextField(null=True)
     bucket = models.ManyToManyField('products.Product', through='accounts.Bucket',
                                     through_fields=('profile', 'product'))
     following = models.ManyToManyField('accounts.Profile', related_name='+')
@@ -50,6 +51,18 @@ class Profile(BaseModel, models.Model):
         if cls.objects.filter(id=profile_id).exists():
             return cls.objects.get(id=profile_id)
         raise Exception('')
+
+    @property
+    def point(self):
+        return sum(self.point_set.values('point'))
+
+    @property
+    def favorites(self):
+        return self.bucket.filter(bucket__is_purchase=False)
+
+    @property
+    def buckets(self):
+        return self.bucket.filter(bucket__is_purchase=True)
 
 
 class Address(BaseModel, models.Model):
