@@ -68,9 +68,9 @@ class GoogleLoginAPI(APIView):
         }
     ))
     def post(self, request, *args, **kwargs):
-        access_token = request.body['access_token']
+        access_token = self.request.data['access_token']
         info = google_get_user_info(access_token=access_token)
-        user = user_create(email=info['email'], nickname=info['nickname'],
+        user = user_create(email=info['email'], nickname=info.get('nickname', None),
                            profile_image=info.get('picture', None),
                            platform='GOOGLE', platform_id='123')
         token = TokenObtainPairSerializer.get_token(user)
