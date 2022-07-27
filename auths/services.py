@@ -123,7 +123,7 @@ def google_get_user_info(access_token):
     return user_info
 
 
-def user_create(email: str, nickname: str, profile_image: str | None, platform: str, platform_id: str):
+def user_create(email: str, nickname: str | None, profile_image: str | None, platform: str, platform_id: str):
     user, created = User.objects.get_or_create(
         username=email,
         defaults={
@@ -136,7 +136,7 @@ def user_create(email: str, nickname: str, profile_image: str | None, platform: 
         Profile.objects.create(
             user=user,
             profile_image=profile_image,
-            nickname=nickname
+            nickname=nickname if nickname is not None else ''
         )
     else:
         if Platform.objects.filter(platform=platform, platform_id=platform_id).first():
