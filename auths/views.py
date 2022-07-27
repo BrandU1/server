@@ -50,7 +50,7 @@ class NaverLoginAPI(APIView):
         access_token = self.request.data['access_token']
         info = naver_get_user_info(access_token=access_token)
         account = info['response']
-        user = user_create(email=account['email'], nickname=account['nickname'],
+        user = user_create(email=account['email'], nickname=account.get('nickname', None),
                            profile_image=account.get('profile_image', None),
                            platform='NAVER', platform_id=account['id'])
         token = TokenObtainPairSerializer.get_token(user)
@@ -61,6 +61,12 @@ class NaverLoginAPI(APIView):
 
 
 class GoogleLoginAPI(APIView):
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'access_token': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        }
+    ))
     def post(self, request, *args, **kwargs):
         access_token = request.body['access_token']
         info = google_get_user_info(access_token=access_token)

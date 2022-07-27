@@ -16,6 +16,8 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.http import HttpResponsePermanentRedirect
+from django.shortcuts import redirect
 from django.template.defaulttags import url
 from django.urls import path, include
 from drf_yasg import openapi
@@ -41,6 +43,7 @@ urlpatterns = [
     path('auth/', include('auths.urls')),
     path('api/v1/accounts/', include('accounts.urls')),
     path('api/v1/products/', include('products.urls')),
+    path('api/v1/search/', include('search.urls')),
 ]
 
 if settings.DEBUG:

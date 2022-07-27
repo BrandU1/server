@@ -2,14 +2,14 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import UniqueConstraint, Deferrable
 
-from core.mixins import BaseMixins
+from core.mixins import BaseModel
 
 
 class User(AbstractUser):
     pass
 
 
-class Platform(BaseMixins, models.Model):
+class Platform(BaseModel, models.Model):
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
     platform = models.CharField(max_length=10)
     platform_id = models.CharField(max_length=100)
@@ -21,7 +21,7 @@ class Platform(BaseMixins, models.Model):
         ]
 
 
-class Profile(BaseMixins, models.Model):
+class Profile(BaseModel, models.Model):
     user = models.OneToOneField('accounts.User', on_delete=models.CASCADE)
     profile_image = models.ImageField(upload_to='media/%Y/%m/%d')
     nickname = models.CharField(max_length=100, null=True)
@@ -52,7 +52,7 @@ class Profile(BaseMixins, models.Model):
         raise Exception('')
 
 
-class Address(BaseMixins, models.Model):
+class Address(BaseModel, models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     road_name_address = models.CharField(max_length=200)
     detail_address = models.CharField(max_length=100)
@@ -66,13 +66,13 @@ class Address(BaseMixins, models.Model):
         ]
 
 
-class Point(BaseMixins, models.Model):
+class Point(BaseModel, models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     point = models.IntegerField()
     memo = models.CharField(max_length=200)
 
 
-class Bucket(BaseMixins, models.Model):
+class Bucket(BaseModel, models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')
     product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
     amount = models.IntegerField()
