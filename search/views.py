@@ -6,6 +6,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import ListAPIView
 from datetime import date
 
+from rest_framework.permissions import IsAuthenticated
+
 from core.paginations import SmallResultsSetPagination
 from products.models import Product
 from products.serializers import ProductSerializer
@@ -32,7 +34,7 @@ class SearchListAPIView(ListAPIView):
         if query is None:
             raise Exception('')
 
-        if self.request.user:
+        if self.request.user and self.request.user.is_authenticated:
             Search.objects.create(profile=self.request.user.profile, search_word=query)
 
         return self.queryset.filter(name__icontains=query).order_by('id')
@@ -48,12 +50,11 @@ class SearchWordListAPIView(ListAPIView):
     ---
     로그인 인증 필요, 로그인이 되어있지 않다면 Exception
     """
+    permission_classes = [IsAuthenticated]
     queryset = Search.objects.all()
     serializer_class = SearchSerializer
 
     def get_queryset(self):
-        if not self.request.user:
-            raise Exception('')
         return self.queryset.filter(profile=self.request.user.profile).order_by('-created')
 
 
