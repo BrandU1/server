@@ -1,18 +1,12 @@
 from rest_framework import serializers
 
 from accounts.models import Profile
-from .models import Product, MainCategory, SubCategory, Review
+from .models import Product, MainCategory, SubCategory, Review, Brand
 
 
-class ProductSimpleSerializer(serializers.ModelSerializer):
+class BrandSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Product
-        fields = ['id', 'backdrop_image', 'name', 'price']
-
-
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
+        model = Brand
         fields = '__all__'
 
 
@@ -31,6 +25,21 @@ class MainCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = MainCategory
         fields = ['id', 'name', 'backdrop_image', 'color', 'sub_categories']
+
+
+class ProductSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'backdrop_image', 'name', 'price']
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    brand = BrandSerializer(read_only=True)
+    category = SubCategorySerializer()
+
+    class Meta:
+        model = Product
+        fields = '__all__'
 
 
 class ReviewListSerializer(serializers.ModelSerializer):
