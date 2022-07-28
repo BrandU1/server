@@ -67,11 +67,12 @@ class Profile(BaseModel, models.Model):
 
 class Address(BaseModel, models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
+    name = models.CharField(max_length=50)
     road_name_address = models.CharField(max_length=200)
     detail_address = models.CharField(max_length=100)
     priority = models.SmallIntegerField(default=1)
     zip_code = models.CharField(max_length=5)
-    memo = models.TextField()
+    memo = models.TextField(null=True)
 
     class Meta:
         constraints = [

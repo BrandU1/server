@@ -36,3 +36,14 @@ class ProfileEditSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['id', 'profile_image', 'nickname', 'name', 'phone_number',
                   'email', 'social_link', 'description', 'platforms']
+
+
+class AddressEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ['name', 'road_name_address', 'detail_address', 'priority', 'zip_code', 'memo']
+
+    def create(self, validated_data):
+        user = self.context.get("request").user
+        profile = Profile.get_profile_or_exception(user.profile.id)
+        return Address.objects.create(profile=profile, **validated_data)
