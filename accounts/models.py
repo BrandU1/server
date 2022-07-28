@@ -9,7 +9,7 @@ class User(AbstractUser):
     pass
 
 
-class Platform(BaseModel, models.Model):
+class Platform(BaseModel):
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
     platform = models.CharField(max_length=10)
     platform_id = models.CharField(max_length=100)
@@ -21,7 +21,7 @@ class Platform(BaseModel, models.Model):
         ]
 
 
-class Profile(BaseModel, models.Model):
+class Profile(BaseModel):
     user = models.OneToOneField('accounts.User', on_delete=models.CASCADE)
     profile_image = models.ImageField(upload_to='media/%Y/%m/%d')
     nickname = models.CharField(max_length=100, null=True)
@@ -32,7 +32,7 @@ class Profile(BaseModel, models.Model):
     social_link = models.CharField(max_length=30, null=True)
     description = models.TextField(null=True)
     bucket = models.ManyToManyField('products.Product', through='accounts.Bucket',
-                                    through_fields=('profile', 'product'))
+                                    through_fields=('profile', 'product'), related_name='+')
     following = models.ManyToManyField('accounts.Profile', related_name='+')
     follower = models.ManyToManyField('accounts.Profile', related_name='+')
 
@@ -65,7 +65,7 @@ class Profile(BaseModel, models.Model):
         return self.bucket.filter(bucket__is_purchase=True)
 
 
-class Address(BaseModel, models.Model):
+class Address(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     road_name_address = models.CharField(max_length=200)
@@ -80,14 +80,14 @@ class Address(BaseModel, models.Model):
         ]
 
 
-class Point(BaseModel, models.Model):
+class Point(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     point = models.IntegerField()
     memo = models.CharField(max_length=200)
 
 
-class Bucket(BaseModel, models.Model):
+class Bucket(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')
-    product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='+')
     amount = models.IntegerField()
     is_purchase = models.BooleanField(default=False)

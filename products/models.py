@@ -1,5 +1,11 @@
 from django.db import models
 
+from core.mixins import BaseModel
+
+
+class Banner(models.Model):
+    backdrop_image = models.ImageField(upload_to='banner', null=True, blank=True)
+
 
 class Brand(models.Model):
     name = models.CharField(max_length=300)
@@ -10,6 +16,7 @@ class MainCategory(models.Model):
     name = models.CharField(max_length=100)
     # TODO: backgroundImage null 속성 제거
     backdrop_image = models.ImageField(upload_to='category', null=True, blank=True)
+    color = models.CharField(max_length=10, default='#DDDDDD')
 
     @property
     def sub_categories(self):
@@ -57,3 +64,10 @@ class ProductImages(models.Model):
     kind = models.CharField(max_length=10)
     image = models.ImageField(upload_to='product/images/%Y-%m')
 
+
+class Review(BaseModel):
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
+    # 구매와 관련된 필드 추가 (order 혹은 purchase)
+    star = models.SmallIntegerField(default=0)
+    description = models.TextField()
