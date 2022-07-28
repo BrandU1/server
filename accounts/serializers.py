@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import Profile, Platform, Bucket, Address
-from products.serializers import ProductSerializer
+from products.serializers import ProductSimpleSerializer
 
 
 class PlatformSerializer(serializers.ModelSerializer):
@@ -11,7 +11,7 @@ class PlatformSerializer(serializers.ModelSerializer):
 
 
 class BucketSerializer(serializers.ModelSerializer):
-    product = ProductSerializer()
+    product = ProductSimpleSerializer()
 
     class Meta:
         model = Bucket
@@ -36,6 +36,12 @@ class ProfileEditSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['id', 'profile_image', 'nickname', 'name', 'phone_number',
                   'email', 'social_link', 'description', 'platforms']
+
+
+class AddressListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = '__all__'
 
 
 class AddressEditSerializer(serializers.ModelSerializer):

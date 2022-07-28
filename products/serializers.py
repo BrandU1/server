@@ -1,11 +1,19 @@
 from rest_framework import serializers
-from .models import Product, MainCategory, SubCategory
+
+from accounts.models import Profile
+from .models import Product, MainCategory, SubCategory, Review
+
+
+class ProductSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'backdrop_image', 'name', 'price']
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'backdrop_image', 'name', 'price']
+        fields = '__all__'
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
@@ -22,4 +30,21 @@ class MainCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainCategory
-        fields = ['id', 'name', 'backdrop_image', 'sub_categories']
+        fields = ['id', 'name', 'backdrop_image', 'color', 'sub_categories']
+
+
+class ReviewListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['product', 'star', 'description']
+
+    def create(self, validated_data):
+        user = self.context.get("request").user
+        profile = Profile.get_profile_or_exception(user.profile.id)
+        return Review.objects.create(profile=profile, **validated_data)
