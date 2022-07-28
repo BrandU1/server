@@ -1,3 +1,5 @@
+import operator
+
 from django.db.models import Count
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -65,7 +67,5 @@ class SearchWordRankListAPIView(ListAPIView):
     serializer_class = SearchRankSerializer
 
     def get_queryset(self):
-        print(self.queryset.filter(created__gte=date.today()).values('search_word').annotate(
-            count=Count('search_word')).order_by('count'))
         return self.queryset.filter(created__gte=date.today()).values('search_word').annotate(
-            count=Count('search_word')).order_by('count')
+            count=Count('search_word')).order_by('-count')
