@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from accounts.serializers import ProfileSerializer, AddressListSerializer
+from accounts.serializers import ProfileSerializer, AddressSerializer
 from orders.models import Order
 from products.serializers import ProductSerializer
 
@@ -8,7 +8,7 @@ from products.serializers import ProductSerializer
 class OrderSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
     product = ProductSerializer()
-    address = AddressListSerializer()
+    address = AddressSerializer()
 
     class Meta:
         model = Order

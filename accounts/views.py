@@ -7,11 +7,19 @@ from rest_framework.views import APIView
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView, ListCreateAPIView
 
 from accounts.models import Profile, Address
-from accounts.serializers import ProfileSummarySerializer, ProfileEditSerializer, AddressEditSerializer, \
-    AddressListSerializer
+from accounts.serializers import ProfileSummarySerializer, ProfileEditSerializer, AddressSerializer, ProfileSerializer
 from core.permissions import IsAuthor
 from products.models import Review
 from products.serializers import ReviewListSerializer, ReviewSerializer
+
+
+class ProfileAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        profile = Profile.get_profile_or_exception(self.request.user.profile.id)
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ProfileDetailAPIView(APIView):
@@ -56,11 +64,7 @@ class ProfileEditAPIView(RetrieveUpdateAPIView):
 class AddressListAPIView(ListCreateAPIView):
     queryset = Address.objects.all()
     permission_classes = [IsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return AddressEditSerializer
-        return AddressListSerializer
+    serializer_class = AddressSerializer
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -79,13 +83,13 @@ class AddressEditAPIView(APIView):
         self.check_object_permissions(self.request, address)
         return address
 
-    @swagger_auto_schema(request_body=AddressEditSerializer)
+    @swagger_auto_schema(request_body=AddressSerializer)
     def put(self, request, *args, **kwargs):
         pk = self.kwargs.get('pk', None)
         if pk is None:
             raise Exception('')
         address = self.get_object(pk)
-        serializer = AddressEditSerializer(address, data=self.request.data, context={'request': request})
+        serializer = AddressSerializer(address, data=self.request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

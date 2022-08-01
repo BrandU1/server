@@ -6,7 +6,7 @@ from products.serializers import ProductSimpleSerializer
 
 
 class CouponCoverageSerializer(serializers.ModelSerializer):
-    product = ProductSimpleSerializer()
+    product = ProductSimpleSerializer(many=True)
 
     class Meta:
         model = CouponCoverage
@@ -18,13 +18,12 @@ class CouponSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Coupon
-        fields = ['name', 'usable_period', 'coverage']
+        fields = ['name', 'usable_period', 'expiration_period', 'coverage']
 
 
 class CouponHoldSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
     coupon = CouponSerializer()
 
     class Meta:
         model = CouponHold
-        fields = ['id', 'profile', 'coupon', 'is_use']
+        fields = ['id', 'coupon', 'is_use', 'created']

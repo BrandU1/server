@@ -20,7 +20,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
 class MainCategorySerializer(serializers.ModelSerializer):
     backdrop_image = serializers.ImageField(use_url=True)
-    sub_categories = SubCategorySerializer(many=True)
+    sub_categories = SubCategorySerializer(source='subcategory_set', many=True)
 
     class Meta:
         model = MainCategory

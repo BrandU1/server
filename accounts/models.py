@@ -31,6 +31,7 @@ class Profile(BaseModel):
     birth = models.DateField(null=True)
     social_link = models.CharField(max_length=30, null=True)
     description = models.TextField(null=True)
+    point = models.IntegerField(default=0)
     bucket = models.ManyToManyField('products.Product', through='accounts.Bucket',
                                     through_fields=('profile', 'product'), related_name='+')
     following = models.ManyToManyField('accounts.Profile', related_name='+')
@@ -51,10 +52,6 @@ class Profile(BaseModel):
         if cls.objects.filter(id=profile_id).exists():
             return cls.objects.get(id=profile_id)
         raise Exception('')
-
-    @property
-    def point(self):
-        return sum(self.point_set.values('point'))
 
     @property
     def favorites(self):
@@ -84,9 +81,10 @@ class Address(BaseModel):
 
 
 class Point(BaseModel):
-    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
-    point = models.IntegerField()
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='points')
     memo = models.CharField(max_length=200)
+    point = models.IntegerField()
+    is_use = models.BooleanField(default=False)
 
 
 class Bucket(BaseModel):
