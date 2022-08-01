@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Profile, Platform, Bucket, Address
+from .models import Profile, Platform, Bucket, Address, Point
 from products.serializers import ProductSimpleSerializer
 
 
@@ -56,3 +56,17 @@ class AddressSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         profile = Profile.get_profile_or_exception(user.profile.id)
         return Address.objects.create(profile=profile, **validated_data)
+
+
+class PointSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Point
+        fields = ['id', 'memo', 'point', 'is_use', 'created']
+
+
+class ProfilePointSerializer(serializers.ModelSerializer):
+    point_history = PointSerializer(source='points', many=True)
+
+    class Meta:
+        model = Profile
+        fields = ['point', 'point_history']

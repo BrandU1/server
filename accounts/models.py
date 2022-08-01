@@ -86,6 +86,27 @@ class Point(BaseModel):
     point = models.IntegerField()
     is_use = models.BooleanField(default=False)
 
+    @classmethod
+    def create(cls, profile: Profile, memo: str, point: int):
+        profile.point += point
+        profile.save()
+        return cls.objects.create(
+            profile=profile,
+            memo=memo,
+            point=point
+        )
+
+    @classmethod
+    def use(cls, profile: Profile, memo: str, point: int):
+        profile.point -= point
+        profile.save()
+        return cls.objects.create(
+            profile=profile,
+            memo=memo,
+            point=point,
+            is_use=True
+        )
+
 
 class Bucket(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')

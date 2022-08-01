@@ -7,7 +7,8 @@ from rest_framework.views import APIView
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView, ListCreateAPIView
 
 from accounts.models import Profile, Address
-from accounts.serializers import ProfileSummarySerializer, ProfileEditSerializer, AddressSerializer, ProfileSerializer
+from accounts.serializers import ProfileSummarySerializer, ProfileEditSerializer, AddressSerializer, ProfileSerializer, \
+    ProfilePointSerializer
 from core.permissions import IsAuthor
 from products.models import Review
 from products.serializers import ReviewListSerializer, ReviewSerializer
@@ -59,6 +60,15 @@ class ProfileEditAPIView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return Profile.get_profile_or_exception(self.request.user.profile.id)
+
+
+class ProfilePointAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        profile = Profile.get_profile_or_exception(self.request.user.profile.id)
+        serializer = ProfilePointSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class AddressListAPIView(ListCreateAPIView):
