@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     'auths.apps.AuthsConfig',
     'products.apps.ProductsConfig',
     'search.apps.SearchConfig',
+    'orders.apps.OrdersConfig',
+    'events.apps.EventsConfig',
 ]
 
 MIDDLEWARE = [

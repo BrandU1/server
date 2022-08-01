@@ -18,6 +18,12 @@ class BucketSerializer(serializers.ModelSerializer):
         fields = ['product', 'amount']
 
 
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = '__all__'
+
+
 class ProfileSummarySerializer(serializers.ModelSerializer):
     point = serializers.IntegerField(read_only=True)
     favorites = BucketSerializer(many=True)
