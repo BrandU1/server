@@ -44,16 +44,13 @@ class ProfileEditSerializer(serializers.ModelSerializer):
                   'email', 'social_link', 'description', 'platforms']
 
 
-class AddressListSerializer(serializers.ModelSerializer):
+class AddressSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Address
-        fields = '__all__'
-
-
-class AddressEditSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Address
-        fields = ['name', 'road_name_address', 'detail_address', 'priority', 'zip_code', 'memo']
+        fields = ['id', 'name', 'recipient', 'address', 'road_name_address', 'detail_address',
+                  'priority', 'zip_code', 'phone_number', 'memo']
 
     def create(self, validated_data):
         user = self.context.get("request").user

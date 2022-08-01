@@ -68,10 +68,13 @@ class Profile(BaseModel):
 class Address(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
+    recipient = models.CharField(max_length=30)
+    address = models.CharField(max_length=200)
     road_name_address = models.CharField(max_length=200)
     detail_address = models.CharField(max_length=100)
     priority = models.SmallIntegerField(default=1)
     zip_code = models.CharField(max_length=5)
+    phone_number = models.CharField(max_length=15)
     memo = models.TextField(null=True)
 
     class Meta:
