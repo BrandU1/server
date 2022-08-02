@@ -93,12 +93,12 @@ class AddressEditAPIView(APIView):
         return address
 
     @swagger_auto_schema(request_body=AddressSerializer)
-    def put(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         pk = self.kwargs.get('pk', None)
         if pk is None:
             raise Exception('')
         address = self.get_object(pk)
-        serializer = AddressSerializer(address, data=self.request.data, context={'request': request})
+        serializer = AddressSerializer(address, data=self.request.data, context={'request': request}, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
