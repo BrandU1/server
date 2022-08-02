@@ -18,10 +18,6 @@ class MainCategory(models.Model):
     backdrop_image = models.ImageField(upload_to='category', null=True, blank=True)
     color = models.CharField(max_length=10, default='#DDDDDD')
 
-    @property
-    def sub_categories(self):
-        return self.subcategory_set.all()
-
     def __str__(self):
         return self.name
 

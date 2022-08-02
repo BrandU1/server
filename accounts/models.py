@@ -31,6 +31,7 @@ class Profile(BaseModel):
     birth = models.DateField(null=True)
     social_link = models.CharField(max_length=30, null=True)
     description = models.TextField(null=True)
+    point = models.IntegerField(default=0)
     bucket = models.ManyToManyField('products.Product', through='accounts.Bucket',
                                     through_fields=('profile', 'product'), related_name='+')
     following = models.ManyToManyField('accounts.Profile', related_name='+')
@@ -53,10 +54,6 @@ class Profile(BaseModel):
         raise Exception('')
 
     @property
-    def point(self):
-        return sum(self.point_set.values('point'))
-
-    @property
     def favorites(self):
         return self.bucket.filter(bucket__is_purchase=False)
 
@@ -68,10 +65,13 @@ class Profile(BaseModel):
 class Address(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
+    recipient = models.CharField(max_length=30)
+    address = models.CharField(max_length=200)
     road_name_address = models.CharField(max_length=200)
     detail_address = models.CharField(max_length=100)
     priority = models.SmallIntegerField(default=1)
     zip_code = models.CharField(max_length=5)
+    phone_number = models.CharField(max_length=15)
     memo = models.TextField(null=True)
 
     class Meta:
@@ -81,9 +81,31 @@ class Address(BaseModel):
 
 
 class Point(BaseModel):
-    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
-    point = models.IntegerField()
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='points')
     memo = models.CharField(max_length=200)
+    point = models.IntegerField()
+    is_use = models.BooleanField(default=False)
+
+    @classmethod
+    def create(cls, profile: Profile, memo: str, point: int):
+        profile.point += point
+        profile.save()
+        return cls.objects.create(
+            profile=profile,
+            memo=memo,
+            point=point
+        )
+
+    @classmethod
+    def use(cls, profile: Profile, memo: str, point: int):
+        profile.point -= point
+        profile.save()
+        return cls.objects.create(
+            profile=profile,
+            memo=memo,
+            point=point,
+            is_use=True
+        )
 
 
 class Bucket(BaseModel):

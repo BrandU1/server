@@ -1,11 +1,13 @@
 from django.urls import path
 
 from accounts.views import (
-    ProfileDetailAPIView, ProfileFollowAPIView, ProfileEditAPIView,
-    AddressListAPIView, AddressEditAPIView, ReviewListAPIView, ReviewAPIView
+    ProfileDetailAPIView, ProfileFollowAPIView, ProfileEditAPIView, ProfileAPIView,
+    AddressListAPIView, AddressEditAPIView, ReviewListAPIView, ReviewAPIView, ProfilePointAPIView
 )
 
 urlpatterns = [
+    path('me/', ProfileAPIView.as_view()),
+    path('point/', ProfilePointAPIView.as_view()),
     path('summary/', ProfileDetailAPIView.as_view()),
     path('follow/', ProfileFollowAPIView.as_view()),
     path('edit/', ProfileEditAPIView.as_view()),

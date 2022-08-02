@@ -1,8 +1,13 @@
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from core.paginations import SmallResultsSetPagination
 from .models import Product, MainCategory, Review
-from .serializers import ProductSimpleSerializer, MainCategorySerializer, ReviewListSerializer
+from .serializers import ProductSimpleSerializer, MainCategorySerializer, ReviewListSerializer, ProductSerializer
+
+
+class ProductRetrieveAPIView(RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
 
 class BranduHotDealListView(ListAPIView):
