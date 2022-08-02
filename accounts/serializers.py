@@ -19,9 +19,13 @@ class BucketSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    platforms = PlatformSerializer(source='user.platform_set', many=True, read_only=True)
+
     class Meta:
         model = Profile
-        fields = '__all__'
+        fields = ['id', 'profile_image', 'nickname', 'name', 'phone_number',
+                  'email', 'social_link', 'description', 'platforms']
 
 
 class ProfileSummarySerializer(serializers.ModelSerializer):
@@ -34,27 +38,20 @@ class ProfileSummarySerializer(serializers.ModelSerializer):
         fields = ['favorites', 'buckets', 'point']
 
 
-class ProfileEditSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    platforms = PlatformSerializer(source='user.platform_set', many=True, read_only=True)
-
-    class Meta:
-        model = Profile
-        fields = ['id', 'profile_image', 'nickname', 'name', 'phone_number',
-                  'email', 'social_link', 'description', 'platforms']
-
-
 class AddressSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
+    is_main = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Address
-        fields = ['id', 'name', 'recipient', 'address', 'road_name_address', 'detail_address',
-                  'priority', 'zip_code', 'phone_number', 'memo']
+        fields = ['id', 'is_main', 'name', 'recipient', 'address', 'road_name_address',
+                  'detail_address', 'zip_code', 'phone_number', 'memo']
 
     def create(self, validated_data):
         user = self.context.get("request").user
         profile = Profile.get_profile_or_exception(user.profile.id)
+        if not Address.objects.filter(profile=profile, is_main=True).exists():
+            return Address.objects.create(profile=profile, **validated_data, is_main=True)
         return Address.objects.create(profile=profile, **validated_data)
 
 

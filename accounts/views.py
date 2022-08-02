@@ -4,11 +4,10 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView, ListCreateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView, ListCreateAPIView, UpdateAPIView
 
 from accounts.models import Profile, Address
-from accounts.serializers import ProfileSummarySerializer, ProfileEditSerializer, AddressSerializer, ProfileSerializer, \
-    ProfilePointSerializer
+from accounts.serializers import ProfileSummarySerializer, AddressSerializer, ProfileSerializer, ProfilePointSerializer
 from core.permissions import IsAuthor
 from products.models import Review
 from products.serializers import ReviewListSerializer, ReviewSerializer
@@ -54,9 +53,9 @@ class ProfileFollowAPIView(APIView):
         raise Exception('')
 
 
-class ProfileEditAPIView(RetrieveUpdateAPIView):
+class ProfileEditAPIView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = ProfileEditSerializer
+    serializer_class = ProfileSerializer
 
     def get_object(self):
         return Profile.get_profile_or_exception(self.request.user.profile.id)
@@ -82,7 +81,7 @@ class AddressListAPIView(ListCreateAPIView):
         return context
 
     def get_queryset(self):
-        return self.queryset.filter(profile=self.request.user.profile.id)
+        return self.queryset.filter(profile=self.request.user.profile.id).order_by('-is_main', 'created')
 
 
 class AddressEditAPIView(APIView):
@@ -111,6 +110,21 @@ class AddressEditAPIView(APIView):
             raise Exception('')
         address = self.get_object(pk)
         address.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+class SetMainAddressAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        profile = Profile.get_profile_or_exception(self.request.user.profile.id)
+        pk = kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        address = Address.objects.get(pk=pk)
+
+        if address.profile != profile:
+            raise Exception('')
+
+        address.set_main()
         return Response(status=status.HTTP_200_OK)
 
 
