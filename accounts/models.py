@@ -69,15 +69,16 @@ class Address(BaseModel):
     address = models.CharField(max_length=200)
     road_name_address = models.CharField(max_length=200)
     detail_address = models.CharField(max_length=100)
-    priority = models.SmallIntegerField(default=1)
     zip_code = models.CharField(max_length=5)
     phone_number = models.CharField(max_length=15)
     memo = models.TextField(null=True)
+    is_main = models.BooleanField(default=False)
 
-    class Meta:
-        constraints = [
-            UniqueConstraint(fields=['profile', 'priority'], name='unique_priority', deferrable=Deferrable.DEFERRED),
-        ]
+    def set_main(self) -> None:
+        addresses = Address.objects.filter(profile=self.profile)
+        addresses.update(is_main=False)
+        self.is_main = True
+        self.save()
 
 
 class Point(BaseModel):
