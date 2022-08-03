@@ -8,6 +8,16 @@ class Notice(BaseModel):
     description = models.TextField()
 
 
+class MainInfo(BaseModel):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+
+
+class FAQ(BaseModel):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+
+
 class Inquiry(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     title = models.CharField(max_length=100)

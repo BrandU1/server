@@ -1,13 +1,25 @@
 from rest_framework import serializers
 
 from accounts.models import Profile
-from services.models import Notice, Inquiry
+from services.models import Notice, Inquiry, FAQ, MainInfo
 
 
 class NoticeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notice
         fields = ['id', 'created', 'title', 'description']
+
+
+class MainInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainInfo
+        fields = ['id', 'title', 'description']
+
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = ['id', 'title', 'description']
 
 
 class InquirySerializer(serializers.ModelSerializer):
