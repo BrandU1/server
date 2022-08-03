@@ -20,12 +20,11 @@ class BucketSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    platforms = PlatformSerializer(source='user.platform_set', many=True, read_only=True)
 
     class Meta:
         model = Profile
         fields = ['id', 'profile_image', 'nickname', 'name', 'phone_number',
-                  'email', 'social_link', 'description', 'platforms']
+                  'email', 'social_link', 'description']
 
 
 class ProfileSummarySerializer(serializers.ModelSerializer):
