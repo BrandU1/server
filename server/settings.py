@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'search.apps.SearchConfig',
     'orders.apps.OrdersConfig',
     'events.apps.EventsConfig',
+    'services.apps.ServicesConfig',
 ]
 
 MIDDLEWARE = [
