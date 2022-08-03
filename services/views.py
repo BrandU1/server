@@ -1,3 +1,4 @@
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -67,12 +68,32 @@ class InquiryListCreateAPIView(ListCreateAPIView):
         return self.queryset.filter(profile=profile).order_by('created')
 
 
-class InquiryUpdateAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Inquiry.objects.all()
+class InquiryUpdateAPIView(APIView):
     permission_classes = [IsAuthor]
-    serializer_class = InquirySerializer
 
-    def get_queryset(self):
-        inquiry = self.queryset.get(pk=self.kwargs.get('pk'))
+    def get_object(self, pk):
+        inquiry = Inquiry.objects.get(pk=pk)
         self.check_object_permissions(self.request, inquiry)
-        return super(InquiryUpdateAPIView, self).get_queryset()
+        return inquiry
+
+    @swagger_auto_schema(request_body=InquirySerializer)
+    def patch(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        inquiry = self.get_object(pk)
+        print(self.request.data)
+        serializer = InquirySerializer(inquiry, data=self.request.data, context={'request': request}, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        inquiry = self.get_object(pk)
+        inquiry.is_deleted = True
+        inquiry.save()
+        return Response(status=status.HTTP_200_OK)
