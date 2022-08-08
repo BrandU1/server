@@ -49,9 +49,14 @@ class ReviewListSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    product_name = serializers.CharField(read_only=True)
+    payment_day = serializers.CharField(read_only=True)
+    is_write = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = Review
-        fields = ['product', 'star', 'description']
+        fields = ['id', 'product_name', 'payment_day', 'is_write',  'star', 'description']
 
     def create(self, validated_data):
         user = self.context.get("request").user

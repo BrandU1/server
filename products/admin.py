@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, MainCategory, SubCategory, Brand
+from .models import Product, MainCategory, SubCategory, Brand, Review
 
 
 @admin.register(Product)
@@ -19,4 +19,9 @@ class SubCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
     pass

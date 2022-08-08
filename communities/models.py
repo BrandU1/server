@@ -1,11 +1,11 @@
 from django.db import models
 
-from core.mixins import BaseMixins
+from core.mixins import BaseModel
 
 
-class Post(BaseMixins, models.Model):
+class Post(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
 
 
-class Review(BaseMixins, models.Model):
+class Review(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)

@@ -6,8 +6,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView, ListCreateAPIView, UpdateAPIView
 
-from accounts.models import Profile, Address
-from accounts.serializers import ProfileSummarySerializer, AddressSerializer, ProfileSerializer, ProfilePointSerializer
+from accounts.models import Profile, Address, Notify
+from accounts.serializers import ProfileSummarySerializer, AddressSerializer, ProfileSerializer, ProfilePointSerializer, \
+    NotifySerializer
 from core.permissions import IsAuthor
 from products.models import Review
 from products.serializers import ReviewListSerializer, ReviewSerializer
@@ -128,24 +129,6 @@ class SetMainAddressAPIView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class ReviewListAPIView(ListCreateAPIView):
-    queryset = Review.objects.all()
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return ReviewSerializer
-        return ReviewListSerializer
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
-
-    def get_queryset(self):
-        return self.queryset.filter(profile=self.request.user.profile.id)
-
-
 class ReviewAPIView(APIView):
     permission_classes = [IsAuthor]
 
@@ -174,3 +157,31 @@ class ReviewAPIView(APIView):
         review.is_deleted = True
         review.save()
         return Response(status=status.HTTP_200_OK)
+
+
+class NotifyAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        notify = Notify.objects.get(profile=profile)
+        serializer = NotifySerializer(notify)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, *args, **kwargs):
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        notify = Notify.objects.get(profile=profile)
+        serializer = NotifySerializer(notify, data=self.request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ReviewListAPIView(ListAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(profile=self.request.user.profile.id).order_by('created')

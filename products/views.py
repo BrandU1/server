@@ -1,8 +1,11 @@
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, ListCreateAPIView, CreateAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 
 from core.paginations import SmallResultsSetPagination
 from .models import Product, MainCategory, Review
-from .serializers import ProductSimpleSerializer, MainCategorySerializer, ReviewListSerializer, ProductSerializer
+from .serializers import ProductSimpleSerializer, MainCategorySerializer, ReviewListSerializer, ProductSerializer, \
+    ReviewSerializer
 
 
 class ProductRetrieveAPIView(RetrieveAPIView):
@@ -33,3 +36,13 @@ class ProductReviewListAPIView(ListAPIView):
         if pk is None:
             raise Exception('')
         return self.queryset.filter(product=pk).order_by('created')
+
+
+class ReviewCreateAPIView(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ReviewSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context

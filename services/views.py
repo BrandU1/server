@@ -19,14 +19,14 @@ class NoticeListAPIView(ListAPIView):
 
 class ServicesListAPIView(APIView):
     def get(self, request, *args, **kwargs):
-        faq = FAQ.objects.all().order_by('created')[:4]
+        faq = FAQ.objects.all().order_by('-created')[:4]
         faq_serializer = FAQSerializer(faq, many=True)
-        main_info = MainInfo.objects.all().order_by('created')[:4]
+        main_info = MainInfo.objects.all().order_by('-created')[:4]
         main_info_serializer = MainInfoSerializer(main_info, many=True)
 
         if self.request.user and not self.request.user.is_anonymous:
             profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
-            inquiry = Inquiry.objects.filter(profile=profile).order_by('created')[:4]
+            inquiry = Inquiry.objects.filter(profile=profile).order_by('-created')[:4]
             inquiry_serializer = InquirySerializer(inquiry, many=True)
             return Response({
                 'main_infos': main_info_serializer.data,

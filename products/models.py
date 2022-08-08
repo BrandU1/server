@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from core.mixins import BaseModel
@@ -63,7 +64,15 @@ class ProductImages(models.Model):
 
 class Review(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
-    product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
-    # 구매와 관련된 필드 추가 (order 혹은 purchase)
-    star = models.SmallIntegerField(default=0)
-    description = models.TextField()
+    order = models.OneToOneField('orders.Order', on_delete=models.CASCADE)
+    star = models.SmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(10)])
+    description = models.TextField(null=True, blank=True)
+    is_write = models.BooleanField(default=False)
+
+    @property
+    def product_name(self):
+        return self.order.product.name
+
+    @property
+    def payment_day(self):
+        return self.order.created
