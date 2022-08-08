@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Profile, Platform, Bucket, Address, Point
+from .models import Profile, Platform, Bucket, Address, Point, Notify
 from products.serializers import ProductSimpleSerializer
 
 
@@ -67,3 +67,9 @@ class ProfilePointSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['point', 'point_history']
+
+
+class NotifySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notify
+        fields = ['is_store', 'is_community', 'is_event']

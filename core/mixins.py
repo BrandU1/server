@@ -8,7 +8,8 @@ class BaseModel(models.Model):
     updated = models.DateTimeField(auto_now=True)
     is_deleted = models.BooleanField(default=False)
 
-    objects = CustomModelManager()
+    objects = models.Manager()
+    not_deleted = CustomModelManager()
 
     class Meta:
         abstract = True

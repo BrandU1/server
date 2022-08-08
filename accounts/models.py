@@ -114,3 +114,10 @@ class Bucket(BaseModel):
     product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='+')
     amount = models.IntegerField()
     is_purchase = models.BooleanField(default=False)
+
+
+class Notify(BaseModel):
+    profile = models.OneToOneField('accounts.Profile', on_delete=models.CASCADE)
+    is_store = models.BooleanField(default=False)
+    is_community = models.BooleanField(default=False)
+    is_event = models.BooleanField(default=False)
