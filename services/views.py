@@ -65,7 +65,7 @@ class InquiryListCreateAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         profile = Profile.get_profile_or_exception(self.request.user.profile.id)
-        return self.queryset.filter(profile=profile).order_by('created')
+        return self.queryset.filter(profile=profile).order_by('-created')
 
 
 class InquiryUpdateAPIView(APIView):
