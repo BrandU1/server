@@ -72,7 +72,7 @@ class GoogleLoginAPI(APIView):
         info = google_get_user_info(access_token=access_token)
         user = user_create(email=info['email'], nickname=info.get('nickname', None),
                            profile_image=info.get('picture', None),
-                           platform='GOOGLE', platform_id='123')
+                           platform='GOOGLE', platform_id=info['sub'])
         token = TokenObtainPairSerializer.get_token(user)
         return Response({
             'refresh_token': str(token),
