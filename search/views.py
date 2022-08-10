@@ -3,12 +3,16 @@ import operator
 from django.db.models import Count
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
 from rest_framework.generics import ListAPIView
 from datetime import date
 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from core.paginations import SmallResultsSetPagination
+from core.permissions import IsAuthor
 from products.models import Product
 from products.serializers import ProductSerializer
 from search.models import Search
@@ -51,11 +55,29 @@ class SearchWordListAPIView(ListAPIView):
     로그인 인증 필요, 로그인이 되어있지 않다면 Exception
     """
     permission_classes = [IsAuthenticated]
-    queryset = Search.objects.all()
+    queryset = Search.not_deleted.all()
     serializer_class = SearchSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(profile=self.request.user.profile).order_by('-created')
+        return self.queryset.filter(profile=self.request.user.profile).order_by('-created')[:10]
+
+
+class SearchWordDeleteAPIView(APIView):
+    permission_classes = [IsAuthor]
+
+    def get_object(self, pk):
+        search = Search.objects.get(pk=pk)
+        self.check_object_permissions(self.request, search)
+        return search
+
+    def delete(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        search = self.get_object(pk)
+        search.is_deleted = True
+        search.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SearchWordRankListAPIView(ListAPIView):
@@ -68,5 +90,5 @@ class SearchWordRankListAPIView(ListAPIView):
     serializer_class = SearchRankSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(created__gte=date.today()).values('search_word').annotate(
-            count=Count('search_word')).order_by('-count')
+        return self.queryset.values('search_word').annotate(
+            count=Count('search_word')).order_by('-count')[:10]
