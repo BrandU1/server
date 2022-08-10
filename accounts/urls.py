@@ -3,7 +3,7 @@ from django.urls import path
 from accounts.views import (
     ProfileDetailAPIView, ProfileFollowAPIView, ProfileEditAPIView, ProfileAPIView, SetMainAddressAPIView,
     AddressListAPIView, AddressEditAPIView, ReviewListAPIView, ReviewAPIView, ProfilePointAPIView, NotifyAPIView,
-    FavoriteListAPIView, BucketListAPIView
+    FavoriteListAPIView, BucketListAPIView, BucketChangeDeleteAPIView
 )
 
 urlpatterns = [
@@ -20,4 +20,5 @@ urlpatterns = [
     path('review/<int:pk>/', ReviewAPIView.as_view()),
     path('favorites/', FavoriteListAPIView.as_view()),
     path('buckets/', BucketListAPIView.as_view()),
+    path('bucket/<int:pk>/', BucketChangeDeleteAPIView.as_view()),
 ]
