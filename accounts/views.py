@@ -6,9 +6,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView, ListCreateAPIView, UpdateAPIView
 
-from accounts.models import Profile, Address, Notify
+from accounts.models import Profile, Address, Notify, Bucket
 from accounts.serializers import ProfileSummarySerializer, AddressSerializer, ProfileSerializer, ProfilePointSerializer, \
-    NotifySerializer
+    NotifySerializer, BucketSerializer
 from core.permissions import IsAuthor
 from products.models import Review
 from products.serializers import ReviewListSerializer, ReviewSerializer
@@ -184,4 +184,25 @@ class ReviewListAPIView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(profile=self.request.user.profile.id).order_by('created')
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        return self.queryset.filter(profile=profile).order_by('created')
+
+
+class FavoriteListAPIView(ListAPIView):
+    queryset = Bucket.objects.all()
+    serializer_class = BucketSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        return self.queryset.filter(profile=profile, is_purchase=False)
+
+
+class BucketListAPIView(ListAPIView):
+    queryset = Bucket.objects.all()
+    serializer_class = BucketSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        return self.queryset.filter(profile=profile, is_purchase=True)

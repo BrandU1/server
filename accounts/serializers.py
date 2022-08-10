@@ -15,7 +15,7 @@ class BucketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bucket
-        fields = ['product', 'amount']
+        fields = ['id', 'product', 'amount', 'is_purchase']
 
 
 class ProfileSerializer(serializers.ModelSerializer):
