@@ -4,7 +4,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView, ListCreateAPIView, UpdateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView, ListCreateAPIView, UpdateAPIView, \
+    get_object_or_404
 
 from accounts.models import Profile, Address, Notify, Bucket
 from accounts.serializers import ProfileSummarySerializer, AddressSerializer, ProfileSerializer, ProfilePointSerializer, \
@@ -206,3 +207,31 @@ class BucketListAPIView(ListAPIView):
     def get_queryset(self):
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         return self.queryset.filter(profile=profile, is_purchase=True)
+
+
+class BucketChangeDeleteAPIView(APIView):
+    permission_classes = [IsAuthor]
+
+    def get_object(self, pk):
+        bucket = Bucket.objects.get(pk=pk)
+        self.check_object_permissions(self.request, bucket)
+        return bucket
+
+    def patch(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        bucket = self.get_object(pk)
+        if bucket.is_purchase:
+            raise Exception('')
+        bucket.is_purchase = True
+        bucket.save()
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        bucket = self.get_object(pk)
+        bucket.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

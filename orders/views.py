@@ -23,6 +23,8 @@ class OrderCreateAPIView(APIView):
     @swagger_auto_schema(request_body=OrderCreateSerializer)
     def post(self, request, *args, **kwargs):
         serializer = OrderCreateSerializer(data=self.request.data, context={'request': self.request})
+        if serializer.is_valid():
+            serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

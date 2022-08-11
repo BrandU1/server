@@ -38,6 +38,8 @@ class Product(models.Model):
     brand = models.ForeignKey('products.Brand', on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey('products.SubCategory', on_delete=models.CASCADE)
     backdrop_image = models.ImageField(upload_to='product/%Y-%m', null=True, blank=True)
+    options = models.ForeignKey('products.ProductOption', on_delete=models.CASCADE, related_name='+')
+    images = models.ForeignKey('products.ProductImages', on_delete=models.CASCADE, related_name='+')
     price = models.IntegerField()
 
 
@@ -51,9 +53,14 @@ class Discount(models.Model):
 
 class ProductOption(models.Model):
     product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
-    color = models.CharField(max_length=20)
+    color = models.ForeignKey('products.Color', on_delete=models.CASCADE)
     size = models.CharField(max_length=4)
     count = models.IntegerField(default=0)
+
+
+class Color(models.Model):
+    name = models.CharField(max_length=20)
+    hashcode = models.CharField(max_length=7)
 
 
 class ProductImages(models.Model):

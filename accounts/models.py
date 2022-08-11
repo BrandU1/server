@@ -23,7 +23,7 @@ class Platform(BaseModel):
 
 class Profile(BaseModel):
     user = models.OneToOneField('accounts.User', on_delete=models.CASCADE)
-    profile_image = models.ImageField(upload_to='media/%Y/%m/%d')
+    profile_image = models.ImageField(upload_to='profile/%Y/%m/%d')
     nickname = models.CharField(max_length=100, null=True)
     name = models.CharField(max_length=10, null=True)
     email = models.EmailField(null=True)

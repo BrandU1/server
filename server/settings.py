@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'orders.apps.OrdersConfig',
     'events.apps.EventsConfig',
     'services.apps.ServicesConfig',
+    'communities.apps.CommunitiesConfig',
 ]
 
 MIDDLEWARE = [
