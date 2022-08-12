@@ -160,7 +160,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
 
     'ALGORITHM': 'HS256',
@@ -179,12 +179,14 @@ SWAGGER_SETTINGS = {
     }
 }
 
-CORS_ORIGIN_WHITELIST = [
-    # Test 를 위한 설정
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'https://www.themealways.com',
-]
+CORS_ORIGIN_ALLOW_ALL = True
+
+# CORS_ORIGIN_WHITELIST = [
+#     # Test 를 위한 설정
+#     'http://localhost:3000',
+#     'http://127.0.0.1:3000',
+#     'https://www.themealways.com',
+# ]
 
 CORS_ALLOW_CREDENTIALS = True
 
