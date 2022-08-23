@@ -38,8 +38,6 @@ class Product(models.Model):
     brand = models.ForeignKey('products.Brand', on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey('products.SubCategory', on_delete=models.CASCADE)
     backdrop_image = models.ImageField(upload_to='product/%Y-%m', null=True, blank=True)
-    options = models.ForeignKey('products.ProductOption', on_delete=models.CASCADE, related_name='+')
-    images = models.ForeignKey('products.ProductImages', on_delete=models.CASCADE, related_name='+')
     price = models.IntegerField()
 
 
