@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.models import Profile
 from core.paginations import SmallResultsSetPagination
 from core.permissions import IsAuthor
 from products.models import Product
@@ -77,6 +78,16 @@ class SearchWordDeleteAPIView(APIView):
         search = self.get_object(pk)
         search.is_deleted = True
         search.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SearchWordDeleteAllAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        search = Search.objects.filter(profile=profile)
+        search.update(is_delete=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

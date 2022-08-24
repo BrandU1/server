@@ -10,12 +10,18 @@ from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView, ListCrea
 from accounts.models import Profile, Address, Notify, Bucket
 from accounts.serializers import ProfileSummarySerializer, AddressSerializer, ProfileSerializer, ProfilePointSerializer, \
     NotifySerializer, BucketSerializer
+from communities.models import Post
+from communities.serializers import PostSimpleSerializer
 from core.permissions import IsAuthor
 from products.models import Review
 from products.serializers import ReviewListSerializer, ReviewSerializer
 
 
 class ProfileAPIView(APIView):
+    """
+    사용자 프로필 정보 조회 API
+    ---
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -25,6 +31,10 @@ class ProfileAPIView(APIView):
 
 
 class ProfileDetailAPIView(APIView):
+    """
+    사용자 특수 정보(쿠폰, 포인트 등등...) 요약 조회 API
+    ---
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -41,21 +51,23 @@ class ProfileFollowAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        if self.request.user:
-            profile_id = self.request.data['user']
-            profile = Profile.objects.get(user=self.request.user.id)
-            profile.follow(Profile.get_profile_or_exception(profile_id))
-        raise Exception('')
+        profile_id = self.request.data['user']
+        profile = Profile.objects.get(user=self.request.user.id)
+        profile.follow(Profile.get_profile_or_exception(profile_id))
+        return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
-        if self.request.user:
-            profile_id = self.request.data['user']
-            profile = Profile.objects.get(user=self.request.user.id)
-            profile.unfollow(Profile.get_profile_or_exception(profile_id))
-        raise Exception('')
+        profile_id = self.request.data['user']
+        profile = Profile.objects.get(user=self.request.user.id)
+        profile.unfollow(Profile.get_profile_or_exception(profile_id))
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProfileEditAPIView(UpdateAPIView):
+    """
+    사용자 프로필 정보 수정 API
+    ---
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = ProfileSerializer
 
@@ -64,6 +76,10 @@ class ProfileEditAPIView(UpdateAPIView):
 
 
 class ProfilePointAPIView(APIView):
+    """
+    사용자 포인트 조회 API
+    ---
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -73,6 +89,10 @@ class ProfilePointAPIView(APIView):
 
 
 class AddressListAPIView(ListCreateAPIView):
+    """
+    사용자 배송지 정보 관련 조회 및 생성 API
+    ---
+    """
     queryset = Address.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = AddressSerializer
@@ -87,6 +107,10 @@ class AddressListAPIView(ListCreateAPIView):
 
 
 class AddressEditAPIView(APIView):
+    """
+    사용자 배송지 수정 및 삭제 API
+    ---
+    """
     permission_classes = [IsAuthor]
 
     def get_object(self, pk):
@@ -116,7 +140,10 @@ class AddressEditAPIView(APIView):
 
 
 class SetMainAddressAPIView(APIView):
-    def post(self, request, *args, **kwargs):
+    """
+    기본 배송지 설정 API
+    """
+    def patch(self, request, *args, **kwargs):
         profile = Profile.get_profile_or_exception(self.request.user.profile.id)
         pk = kwargs.get('pk', None)
         if pk is None:
@@ -127,10 +154,14 @@ class SetMainAddressAPIView(APIView):
             raise Exception('')
 
         address.set_main()
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class ReviewAPIView(APIView):
+    """
+    사용자 리뷰 수정 및 삭제 API
+    ---
+    """
     permission_classes = [IsAuthor]
 
     def get_object(self, pk):
@@ -161,6 +192,10 @@ class ReviewAPIView(APIView):
 
 
 class NotifyAPIView(APIView):
+    """
+    사용자 1:1 문의 조회 및 수정 API
+    ---
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -180,6 +215,10 @@ class NotifyAPIView(APIView):
 
 
 class ReviewListAPIView(ListAPIView):
+    """
+    사용자 작성 리뷰 리스트 조회 API
+    ---
+    """
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
@@ -189,7 +228,28 @@ class ReviewListAPIView(ListAPIView):
         return self.queryset.filter(profile=profile).order_by('created')
 
 
+class FavoriteCreateAPIView(APIView):
+    """
+    사용자 관심 상품 추가 API
+    ---
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        pk = kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        bucket = Bucket.objects.create(profile=profile, product_id=pk, amount=1)
+        serializer = BucketSerializer(bucket)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 class FavoriteListAPIView(ListAPIView):
+    """
+    관심 상품 리스트 조회 API
+    ---
+    """
     queryset = Bucket.objects.all()
     serializer_class = BucketSerializer
     permission_classes = [IsAuthenticated]
@@ -200,6 +260,10 @@ class FavoriteListAPIView(ListAPIView):
 
 
 class BucketListAPIView(ListAPIView):
+    """
+    장바구니 리스트 조회 API
+    ---
+    """
     queryset = Bucket.objects.all()
     serializer_class = BucketSerializer
     permission_classes = [IsAuthenticated]
@@ -210,6 +274,10 @@ class BucketListAPIView(ListAPIView):
 
 
 class BucketChangeDeleteAPIView(APIView):
+    """
+    관심 상품 -> 장바구니 조회 및 장바구니 삭제 API
+    ---
+    """
     permission_classes = [IsAuthor]
 
     def get_object(self, pk):
@@ -234,4 +302,43 @@ class BucketChangeDeleteAPIView(APIView):
             raise Exception('')
         bucket = self.get_object(pk)
         bucket.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PostScrappedListAPIView(ListAPIView):
+    """
+    사용자 스크랩 게시글 조회 API
+    ---
+    """
+    serializer_class = PostSimpleSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        return profile.scrapped.all()
+
+
+class PostScrappedCreateAPIView(APIView):
+    """
+    사용자 스크랩 생성(스크랩 하기) 및 삭제 API
+    ---
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        pk = kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        post = get_object_or_404(Post, pk=pk)
+        profile.scrapped.add(post)
+        return Response(status=status.HTTP_201_CREATED)
+
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        post = get_object_or_404(Post, pk=pk)
+        profile.scrapped.remove(post)
         return Response(status=status.HTTP_204_NO_CONTENT)

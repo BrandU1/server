@@ -18,6 +18,12 @@ class BucketSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'amount', 'is_purchase']
 
 
+class ProfileSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['id', 'profile_image', 'nickname', 'name']
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     platforms = PlatformSerializer(source='user.platform_set', many=True, read_only=True)

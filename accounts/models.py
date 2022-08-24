@@ -34,6 +34,7 @@ class Profile(BaseModel):
     point = models.IntegerField(default=0)
     bucket = models.ManyToManyField('products.Product', through='accounts.Bucket',
                                     through_fields=('profile', 'product'), related_name='+')
+    scrapped = models.ManyToManyField('communities.Post', related_name='+')
     following = models.ManyToManyField('accounts.Profile', related_name='+')
     follower = models.ManyToManyField('accounts.Profile', related_name='+')
 
@@ -112,7 +113,7 @@ class Point(BaseModel):
 class Bucket(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')
     product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='+')
-    amount = models.IntegerField()
+    amount = models.IntegerField(default=1)
     is_purchase = models.BooleanField(default=False)
 
 
