@@ -50,7 +50,7 @@ class Discount(models.Model):
 
 
 class ProductOption(models.Model):
-    product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='options')
     color = models.ForeignKey('products.Color', on_delete=models.CASCADE)
     size = models.CharField(max_length=4)
     count = models.IntegerField(default=0)

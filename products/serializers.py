@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounts.models import Profile
-from .models import Product, MainCategory, SubCategory, Review, Brand
+from .models import Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -33,9 +33,24 @@ class ProductSimpleSerializer(serializers.ModelSerializer):
         fields = ['id', 'backdrop_image', 'name', 'price']
 
 
+class ColorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Color
+        fields = ['name', 'hashcode']
+
+
+class ProductOptionSerializer(serializers.ModelSerializer):
+    color = ColorSerializer()
+
+    class Meta:
+        model = ProductOption
+        fields = ['id', 'color', 'size', 'count']
+
+
 class ProductSerializer(serializers.ModelSerializer):
     brand = BrandSerializer(read_only=True)
     category = SubCategorySerializer()
+    options = ProductOptionSerializer(many=True)
 
     class Meta:
         model = Product

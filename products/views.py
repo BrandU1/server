@@ -23,6 +23,20 @@ class CategoryListView(ListAPIView):
     serializer_class = MainCategorySerializer
 
 
+class ProductCategoryListView(ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSimpleSerializer
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Review.objects.none()
+        
+        pk = self.kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        return self.queryset.filter(category_id=pk)
+
+
 class ProductReviewListAPIView(ListAPIView):
     pagination_class = SmallResultsSetPagination
     queryset = Review.objects.all()
