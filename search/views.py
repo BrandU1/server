@@ -87,7 +87,7 @@ class SearchWordDeleteAllAPIView(APIView):
     def delete(self, request, *args, **kwargs):
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         search = Search.objects.filter(profile=profile)
-        search.update(is_delete=True)
+        search.update(is_deleted=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
