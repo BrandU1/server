@@ -1,11 +1,10 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView, ListCreateAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 
+from accounts.serializers import ReviewListSerializer
 from core.paginations import SmallResultsSetPagination
 from .models import Product, MainCategory, Review
-from .serializers import ProductSimpleSerializer, MainCategorySerializer, ReviewListSerializer, ProductSerializer, \
-    ReviewSerializer
+from .serializers import ProductSimpleSerializer, MainCategorySerializer, ProductSerializer, ReviewSerializer
 
 
 class ProductRetrieveAPIView(RetrieveAPIView):
@@ -16,6 +15,11 @@ class ProductRetrieveAPIView(RetrieveAPIView):
 class BranduHotDealListView(ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSimpleSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
 
 
 class CategoryListView(ListAPIView):
@@ -39,7 +43,7 @@ class ProductCategoryListView(ListAPIView):
 
 class ProductReviewListAPIView(ListAPIView):
     pagination_class = SmallResultsSetPagination
-    queryset = Review.objects.all()
+    queryset = Review.not_deleted.all()
     serializer_class = ReviewListSerializer
 
     def get_queryset(self):
@@ -49,10 +53,10 @@ class ProductReviewListAPIView(ListAPIView):
         pk = self.kwargs.get('pk', None)
         if pk is None:
             raise Exception('')
-        return self.queryset.filter(product=pk).order_by('created')
+        return self.queryset.filter(product=pk, is_write=True).order_by('created')
 
 
-class ReviewCreateAPIView(CreateAPIView):
+class ReviewCreateAPIView(CreateAPIView):  # 리뷰 생성 관련 Views
     permission_classes = [IsAuthenticated]
     serializer_class = ReviewSerializer
 

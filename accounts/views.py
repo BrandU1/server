@@ -4,8 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView, ListCreateAPIView, UpdateAPIView, \
-    get_object_or_404
+from rest_framework.generics import ListAPIView, ListCreateAPIView, UpdateAPIView, get_object_or_404
 
 from accounts.models import Profile, Address, Notify, Bucket
 from accounts.serializers import ProfileSummarySerializer, AddressSerializer, ProfileSerializer, ProfilePointSerializer, \
@@ -14,7 +13,7 @@ from communities.models import Post
 from communities.serializers import PostSimpleSerializer
 from core.permissions import IsAuthor
 from products.models import Review
-from products.serializers import ReviewListSerializer, ReviewSerializer
+from products.serializers import ReviewSerializer
 
 
 class ProfileAPIView(APIView):
