@@ -31,3 +31,10 @@ class CouponHold(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     coupon = models.ForeignKey('events.Coupon', on_delete=models.CASCADE)
     is_use = models.BooleanField(default=False)
+
+
+class Advertisement(BaseModel):
+    type = models.CharField(max_length=10)
+    title = models.CharField(max_length=100)
+    backdrop_image = models.ImageField(upload_to='events/banner')
+    link = models.URLField()

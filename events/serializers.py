@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounts.serializers import ProfileSerializer
-from events.models import CouponHold, CouponCoverage, Coupon
+from events.models import CouponHold, CouponCoverage, Coupon, Advertisement
 from products.serializers import ProductSimpleSerializer
 
 
@@ -27,3 +27,9 @@ class CouponHoldSerializer(serializers.ModelSerializer):
     class Meta:
         model = CouponHold
         fields = ['id', 'coupon', 'is_use', 'created']
+
+
+class AdvertisementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Advertisement
+        fields = ['id', 'title', 'backdrop_image', 'link']
