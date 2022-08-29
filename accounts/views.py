@@ -193,14 +193,14 @@ class ReviewAPIView(APIView):
 
 class NotifyAPIView(APIView):
     """
-    사용자 1:1 문의 조회 및 수정 API
+    사용자 알림 설정 조회 및 수정 API
     ---
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
-        notify = Notify.objects.get(profile=profile)
+        notify, _ = Notify.objects.get_or_create(profile=profile)
         serializer = NotifySerializer(notify)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -342,3 +342,5 @@ class PostScrappedCreateAPIView(APIView):
         post = get_object_or_404(Post, pk=pk)
         profile.scrapped.remove(post)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+

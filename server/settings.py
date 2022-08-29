@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(os.environ.get('DJANGO_SECRET_KEY'))
 
 ALLOWED_HOSTS = ['api.themealways.com', '3.34.97.255', '127.0.0.1', 'localhost']
 

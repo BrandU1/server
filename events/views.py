@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import Profile
-from events.models import CouponHold, CouponNumber
-from events.serializers import CouponHoldSerializer
+from events.models import CouponHold, CouponNumber, Advertisement
+from events.serializers import CouponHoldSerializer, AdvertisementSerializer
 
 
 class CouponHoldListAPIView(ListAPIView):
@@ -39,3 +39,18 @@ class CouponRegisterAPIView(APIView):
         serializer = CouponHoldSerializer(coupon)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
+class CarouselAdvertisementListAPIView(ListAPIView):
+    queryset = Advertisement.objects.all()
+    serializer_class = AdvertisementSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(type='CAROUSEL')
+
+
+class BannerAdvertisementListAPIView(ListAPIView):
+    queryset = Advertisement.objects.all()
+    serializer_class = AdvertisementSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(type='BANNER')

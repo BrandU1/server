@@ -40,7 +40,11 @@ class SearchListAPIView(ListAPIView):
             raise Exception('')
 
         if self.request.user and self.request.user.is_authenticated:
-            Search.objects.create(profile=self.request.user.profile, search_word=query)
+            profile = self.request.user.profile
+            search_words = Search.objects.filter(profile=profile, search_word=query)
+            if search_words.exists():
+                search_words.update(is_deleted=True)
+            Search.objects.create(profile=profile, search_word=query)
 
         return self.queryset.filter(name__icontains=query).order_by('id')
 
@@ -60,7 +64,7 @@ class SearchWordListAPIView(ListAPIView):
     serializer_class = SearchSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(profile=self.request.user.profile).order_by('-created')[:10]
+        return Search.not_deleted.filter(profile=self.request.user.profile).order_by('-created')[:10]
 
 
 class SearchWordDeleteAPIView(APIView):
