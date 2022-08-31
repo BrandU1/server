@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from accounts.models import Notify, Bucket
+from accounts.models import Notify, Basket
 
 
 @admin.register(Notify)
@@ -8,6 +8,6 @@ class NotifyAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Bucket)
-class BucketAdmin(admin.ModelAdmin):
+@admin.register(Basket)
+class BasketAdmin(admin.ModelAdmin):
     pass
