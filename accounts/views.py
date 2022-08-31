@@ -1,4 +1,3 @@
-from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -6,13 +5,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, ListCreateAPIView, UpdateAPIView, get_object_or_404
 
-from accounts.models import Profile, Address, Notify, Bucket
+from accounts.models import Profile, Address, Notify, Basket, WishList
 from accounts.serializers import ProfileSummarySerializer, AddressSerializer, ProfileSerializer, ProfilePointSerializer, \
-    NotifySerializer, BucketSerializer
+    NotifySerializer, BasketSerializer, WishListSerializer
 from communities.models import Post
 from communities.serializers import PostSimpleSerializer
 from core.permissions import IsAuthor
-from products.models import Review
+from products.models import Review, Product
 from products.serializers import ReviewSerializer
 
 
@@ -40,6 +39,7 @@ class ProfileDetailAPIView(APIView):
         profile = Profile.get_profile_or_exception(self.request.user.profile.id)
         serializer = ProfileSummarySerializer(profile)
         return Response(serializer.data)
+
 
 
 class ProfileFollowAPIView(APIView):
@@ -227,9 +227,9 @@ class ReviewListAPIView(ListAPIView):
         return self.queryset.filter(profile=profile).order_by('created')
 
 
-class FavoriteCreateAPIView(APIView):
+class WishListAPIView(APIView):
     """
-    사용자 관심 상품 추가 API
+    사용자 관심 상품 생성 및 삭제 관련 API
     ---
     """
     permission_classes = [IsAuthenticated]
@@ -239,69 +239,80 @@ class FavoriteCreateAPIView(APIView):
         if pk is None:
             raise Exception('')
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
-        bucket = Bucket.objects.create(profile=profile, product_id=pk, amount=1)
-        serializer = BucketSerializer(bucket)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        product = get_object_or_404(Product, pk=pk)
+        if profile.wish.filter(id=product.id).exists():
+            raise Exception('')
+        profile.wish.add(product)
+        return Response(status=status.HTTP_201_CREATED)
+
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        product = get_object_or_404(Product, pk=pk)
+        if profile.wish.filter(id=product.id).exists():
+            profile.wish.remove(product)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        raise Exception('')
 
 
-class FavoriteListAPIView(ListAPIView):
+class WishListListAPIView(ListAPIView):
     """
     관심 상품 리스트 조회 API
     ---
     """
-    queryset = Bucket.objects.all()
-    serializer_class = BucketSerializer
+    queryset = WishList.objects.all()
+    serializer_class = WishListSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
-        return self.queryset.filter(profile=profile, is_purchase=False)
+        return self.queryset.filter(profile=profile)
 
 
-class BucketListAPIView(ListAPIView):
+class BasketAPIView(APIView):
     """
-    장바구니 리스트 조회 API
+    장바구니 생성 및 삭제 관련 API
     ---
     """
-    queryset = Bucket.objects.all()
-    serializer_class = BucketSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
-        return self.queryset.filter(profile=profile, is_purchase=True)
-
-
-class BucketChangeDeleteAPIView(APIView):
-    """
-    관심 상품 -> 장바구니 조회 및 장바구니 삭제 API
-    ---
-    """
-    permission_classes = [IsAuthor]
-
-    def get_object(self, pk):
-        bucket = Bucket.objects.get(pk=pk)
-        self.check_object_permissions(self.request, bucket)
-        return bucket
-
-    def patch(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         pk = self.kwargs.get('pk', None)
         if pk is None:
             raise Exception('')
-        bucket = self.get_object(pk)
-        if bucket.is_purchase:
+        product = get_object_or_404(Product, pk=pk)
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        if profile.basket.filter(id=product.id).exists():
             raise Exception('')
-        bucket.is_purchase = True
-        bucket.save()
+        profile.basket.add(product)
         return Response(status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         pk = self.kwargs.get('pk', None)
         if pk is None:
             raise Exception('')
-        bucket = self.get_object(pk)
-        bucket.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        product = Product.objects.get(pk=pk)
+        if profile.basket.filter(id=product.id).exists():
+            profile.basket.remove(product)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        raise Exception('')
+
+
+class BasketListAPIView(ListAPIView):
+    """
+    장바구니 리스트 조회 API
+    ---
+    """
+    queryset = Basket.objects.all()
+    serializer_class = BasketSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        return self.queryset.filter(profile=profile)
 
 
 class PostScrappedListAPIView(ListAPIView):
@@ -343,3 +354,4 @@ class PostScrappedCreateAPIView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+# TODO: 장바구니 중복 추가 Exception 추가

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from accounts.models import Address, Profile, Point, Notify, Platform, Bucket
+from accounts.models import Address, Profile, Point, Notify, Platform, Basket, WishList
 from products.models import Review
 from products.serializers import ProductSimpleSerializer
 
@@ -48,12 +48,21 @@ class PlatformSerializer(serializers.ModelSerializer):
         fields = ['created', 'platform']
 
 
-class BucketSerializer(serializers.ModelSerializer):
+
+class WishListSerializer(serializers.ModelSerializer):
     product = ProductSimpleSerializer()
 
     class Meta:
-        model = Bucket
-        fields = ['id', 'product', 'amount', 'is_purchase']
+        model = WishList
+        fields = ['id', 'product']
+
+
+class BasketSerializer(serializers.ModelSerializer):
+    product = ProductSimpleSerializer()
+
+    class Meta:
+        model = Basket
+        fields = ['id', 'product', 'amount']
 
 
 class ProfileSimpleSerializer(serializers.ModelSerializer):
@@ -74,12 +83,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class ProfileSummarySerializer(serializers.ModelSerializer):
     point = serializers.IntegerField(read_only=True)
-    favorites = BucketSerializer(many=True)
-    buckets = BucketSerializer(many=True)
+    wish = WishListSerializer(many=True)
+    basket = BasketSerializer(many=True)
 
     class Meta:
         model = Profile
-        fields = ['favorites', 'buckets', 'point']
+        fields = ['wish', 'basket', 'point']
 
 
 class ReviewListSerializer(serializers.ModelSerializer):

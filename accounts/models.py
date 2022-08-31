@@ -32,7 +32,9 @@ class Profile(BaseModel):
     social_link = models.CharField(max_length=30, null=True)
     description = models.TextField(null=True)
     point = models.IntegerField(default=0)
-    bucket = models.ManyToManyField('products.Product', through='accounts.Bucket',
+    wish = models.ManyToManyField('products.Product', through='accounts.WishList',
+                                  through_fields=('profile', 'product'), related_name='+')
+    basket = models.ManyToManyField('products.Product', through='accounts.Basket',
                                     through_fields=('profile', 'product'), related_name='+')
     scrapped = models.ManyToManyField('communities.Post', related_name='+')
     following = models.ManyToManyField('accounts.Profile', related_name='+')
@@ -110,11 +112,15 @@ class Point(BaseModel):
         )
 
 
-class Bucket(BaseModel):
+class WishList(models.Model):
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='+')
+
+
+class Basket(models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')
     product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='+')
     amount = models.IntegerField(default=1)
-    is_purchase = models.BooleanField(default=False)
 
 
 class Notify(BaseModel):

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from accounts.models import Profile, Bucket
+from accounts.models import Profile, WishList
 from products.models import Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color
 
 
@@ -28,18 +28,18 @@ class MainCategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSimpleSerializer(serializers.ModelSerializer):
-    is_bucket = serializers.SerializerMethodField()
+    is_wish = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'backdrop_image', 'name', 'price', 'is_bucket']
+        fields = ['id', 'backdrop_image', 'name', 'price', 'is_wish']
 
-    def get_is_bucket(self, obj):
+    def get_is_wish(self, obj):
         request = self.context.get("request", None)
         if request is None or request.user.is_anonymous:
             return False
         profile = Profile.get_profile_or_exception(request.user.profile.id)
-        return Bucket.objects.filter(product_id=obj.pk, profile=profile).exists()
+        return WishList.objects.filter(product_id=obj.pk, profile=profile).exists()
 
 
 class ColorSerializer(serializers.ModelSerializer):
