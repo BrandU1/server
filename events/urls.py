@@ -8,6 +8,6 @@ from events.views import (
 urlpatterns = [
     path('coupons/', CouponHoldListAPIView.as_view()),
     path('coupons/register/', CouponRegisterAPIView.as_view()),
-    path('events/carousel/', CarouselAdvertisementListAPIView.as_view()),
-    path('events/banner/', BannerAdvertisementListAPIView.as_view()),
+    path('carousel/', CarouselAdvertisementListAPIView.as_view()),
+    path('banner/', BannerAdvertisementListAPIView.as_view()),
 ]

@@ -28,6 +28,7 @@ class MainCategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSimpleSerializer(serializers.ModelSerializer):
+    backdrop_image = serializers.ImageField(use_url=True)
     is_wish = serializers.SerializerMethodField()
 
     class Meta:
@@ -43,6 +44,7 @@ class ProductSimpleSerializer(serializers.ModelSerializer):
 
 
 class ColorSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Color
         fields = ['name', 'hashcode']

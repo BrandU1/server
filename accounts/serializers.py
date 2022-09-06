@@ -48,13 +48,20 @@ class PlatformSerializer(serializers.ModelSerializer):
         fields = ['created', 'platform']
 
 
-
 class WishListSerializer(serializers.ModelSerializer):
+    is_basket = serializers.SerializerMethodField()
     product = ProductSimpleSerializer()
 
     class Meta:
         model = WishList
-        fields = ['id', 'product']
+        fields = ['id', 'product', 'is_basket']
+
+    def get_is_basket(self, obj):
+        request = self.context.get("request", None)
+        if request is None or request.user.is_anonymous:
+            return False
+        profile = Profile.get_profile_or_exception(request.user.profile.id)
+        return Basket.objects.filter(product_id=obj.product.pk, profile=profile).exists()
 
 
 class BasketSerializer(serializers.ModelSerializer):
