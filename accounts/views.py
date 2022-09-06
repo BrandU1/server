@@ -270,6 +270,11 @@ class WishListListAPIView(ListAPIView):
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         return self.queryset.filter(profile=profile)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
+
 
 class BasketAPIView(APIView):
     """
@@ -287,7 +292,7 @@ class BasketAPIView(APIView):
         if profile.basket.filter(id=product.id).exists():
             raise Exception('')
         profile.basket.add(product)
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
         pk = self.kwargs.get('pk', None)
@@ -352,6 +357,3 @@ class PostScrappedCreateAPIView(APIView):
         post = get_object_or_404(Post, pk=pk)
         profile.scrapped.remove(post)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# TODO: 장바구니 중복 추가 Exception 추가

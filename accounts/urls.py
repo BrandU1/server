@@ -19,7 +19,7 @@ urlpatterns = [
     path('address/<int:pk>/main/', SetMainAddressAPIView.as_view()),
     path('review/', ReviewListAPIView.as_view()),
     path('review/<int:pk>/', ReviewAPIView.as_view()),
-    path('wishs/', WishListListAPIView.as_view()),
+    path('wishes/', WishListListAPIView.as_view()),
     path('wish/<int:pk>/', WishListAPIView.as_view()),
     path('scrapped/', PostScrappedListAPIView.as_view()),
     path('scrap/<int:pk>/', PostScrappedCreateAPIView.as_view()),
