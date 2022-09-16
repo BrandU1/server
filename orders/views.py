@@ -47,10 +47,11 @@ class OrderTossConfirmAPIView(APIView):
         order_id = self.request.data['orderId']
         amount = self.request.data['amount']
         order = self.get_object(order_number=order_id)
-        secret_key = os.environ.get('TOSSPAYMENT_SECRET_KEY')
+        # secret_key = os.environ.get('TOSSPAYMENT_SECRET_KEY')
+        # {base64.b64encode(f"{secret_key}:".encode("ascii")).decode("ascii")}
         if order.price == int(amount):
             request = requests.post('https://api.tosspayments.com/v1/payments/confirm', headers={
-                'Authorization': f'Basic {base64.b64encode(f"{secret_key}:".encode("ascii")).decode("ascii")}',
+                'Authorization': f'Basic {os.environ.get("TOSSPAYMENT_API_KEY")}',
                 'Content-Type': 'application/json',
             }, data=json.dumps(self.request.data))
             if request.status_code == 200:
