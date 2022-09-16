@@ -1,3 +1,4 @@
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -6,8 +7,8 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, ListCreateAPIView, UpdateAPIView, get_object_or_404
 
 from accounts.models import Profile, Address, Notify, Basket, WishList
-from accounts.serializers import ProfileSummarySerializer, AddressSerializer, ProfileSerializer, ProfilePointSerializer, \
-    NotifySerializer, BasketSerializer, WishListSerializer
+from accounts.serializers import AddressSerializer, ProfileSerializer, ProfilePointSerializer, \
+    NotifySerializer, BasketSerializer, WishListSerializer, ProfileSimpleSerializer
 from communities.models import Post
 from communities.serializers import PostSimpleSerializer
 from core.permissions import IsAuthor
@@ -28,20 +29,6 @@ class ProfileAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ProfileDetailAPIView(APIView):
-    """
-    사용자 특수 정보(쿠폰, 포인트 등등...) 요약 조회 API
-    ---
-    """
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        profile = Profile.get_profile_or_exception(self.request.user.profile.id)
-        serializer = ProfileSummarySerializer(profile)
-        return Response(serializer.data)
-
-
-
 class ProfileFollowAPIView(APIView):
     """
     사용자 팔로우 · 언팔로우 API
@@ -49,17 +36,43 @@ class ProfileFollowAPIView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'profile_id': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        }
+    ))
     def post(self, request, *args, **kwargs):
-        profile_id = self.request.data['user']
+        profile_id = self.request.data['profile_id']
         profile = Profile.objects.get(user=self.request.user.id)
         profile.follow(Profile.get_profile_or_exception(profile_id))
         return Response(status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'profile_id': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        }
+    ))
     def delete(self, request, *args, **kwargs):
-        profile_id = self.request.data['user']
+        profile_id = self.request.data['profile_id']
         profile = Profile.objects.get(user=self.request.user.id)
         profile.unfollow(Profile.get_profile_or_exception(profile_id))
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProfileFollowListAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk', None)
+        if pk is None:
+            raise Exception('')
+        profile = Profile.get_profile_or_exception(pk)
+        follower_serializer = ProfileSimpleSerializer(profile.following.all(), many=True)
+        following_serializer = ProfileSimpleSerializer(profile.following.all(), many=True)
+        return Response({
+            'follower': follower_serializer.data,
+            'following': following_serializer.data,
+        }, status=status.HTTP_200_OK)
 
 
 class ProfileEditAPIView(UpdateAPIView):
@@ -70,7 +83,7 @@ class ProfileEditAPIView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ProfileSerializer
 
-    def get_object(self):
+    def get_object(self) -> Profile:
         return Profile.get_profile_or_exception(self.request.user.profile.id)
 
 
@@ -85,6 +98,32 @@ class ProfilePointAPIView(APIView):
         profile = Profile.get_profile_or_exception(self.request.user.profile.id)
         serializer = ProfilePointSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProfileSummaryAPIView(APIView):
+    """
+    사용자 요약 정보 (포인트, 찜한 상품 갯수 등등...)
+    ---
+    """
+    def get(self, request, *args, **kwargs):
+        profile = Profile.get_profile_or_exception(self.request.user.profile.id)
+        orders = profile.order_set
+        return Response({
+            'my': {
+                'wish': profile.wish.count(),
+                'basket': profile.basket.count(),
+                'scrap': profile.scrapped.count(),
+                'coupon': profile.couponhold_set.count(),
+                'point': profile.point,
+            },
+            'orders': {
+                'all': orders.all().count(),
+                'paid': orders.filter(status='paid').count(),
+                'delivery': orders.filter(status='delivery').count(),
+                'complete': orders.filter(status='complete').count(),
+                'confirm': orders.filter(status='confirm').count()
+            }
+        }, status=status.HTTP_200_OK)
 
 
 class AddressListAPIView(ListCreateAPIView):

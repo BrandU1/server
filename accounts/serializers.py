@@ -80,22 +80,19 @@ class ProfileSimpleSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
+    profile_image = serializers.ImageField(use_url=True, read_only=True)
+    nickname = serializers.CharField(allow_blank=True)
+    name = serializers.CharField(allow_blank=True)
+    phone_number = serializers.CharField(allow_blank=True)
+    email = serializers.CharField(allow_blank=True)
+    social_link = serializers.CharField(allow_blank=True)
+    description = serializers.CharField(allow_blank=True)
     platforms = PlatformSerializer(source='user.platform_set', many=True, read_only=True)
 
     class Meta:
         model = Profile
         fields = ['id', 'profile_image', 'nickname', 'name', 'phone_number',
                   'email', 'social_link', 'description', 'platforms']
-
-
-class ProfileSummarySerializer(serializers.ModelSerializer):
-    point = serializers.IntegerField(read_only=True)
-    wish = WishListSerializer(many=True)
-    basket = BasketSerializer(many=True)
-
-    class Meta:
-        model = Profile
-        fields = ['wish', 'basket', 'point']
 
 
 class ReviewListSerializer(serializers.ModelSerializer):

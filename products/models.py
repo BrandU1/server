@@ -42,11 +42,12 @@ class Product(models.Model):
 
 
 class Discount(models.Model):
-    product = models.OneToOneField('products.Product', on_delete=models.CASCADE)
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     description = models.TextField()
     discount_price = models.IntegerField(default=0)
     discount_percent = models.IntegerField(default=0)
+    is_finished = models.BooleanField(default=False)
 
 
 class ProductOption(models.Model):

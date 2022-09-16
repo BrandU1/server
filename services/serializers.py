@@ -13,13 +13,13 @@ class NoticeSerializer(serializers.ModelSerializer):
 class MainInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = MainInfo
-        fields = ['id', 'title', 'description']
+        fields = ['id', 'title', 'description', 'created']
 
 
 class FAQSerializer(serializers.ModelSerializer):
     class Meta:
         model = FAQ
-        fields = ['id', 'title', 'description']
+        fields = ['id', 'title', 'description', 'created']
 
 
 class InquirySerializer(serializers.ModelSerializer):

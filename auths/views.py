@@ -26,6 +26,7 @@ class KakaoLoginAPI(APIView):
         }
     ))
     def post(self, request, *args, **kwargs):
+        print(self.request.__dict__)
         access_token = self.request.data['access_token']
         info = kakao_get_user_info(access_token=access_token)
         account = info['kakao_account']

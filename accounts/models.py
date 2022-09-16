@@ -37,17 +37,19 @@ class Profile(BaseModel):
     basket = models.ManyToManyField('products.Product', through='accounts.Basket',
                                     through_fields=('profile', 'product'), related_name='+')
     scrapped = models.ManyToManyField('communities.Post', related_name='+')
-    following = models.ManyToManyField('accounts.Profile', related_name='+')
-    follower = models.ManyToManyField('accounts.Profile', related_name='+')
 
     def follow(self, profile):
-        if self.following.filter(profile=profile).exists():
+        if self.id == profile.id:
             raise Exception('')
-        self.following.add(profile)
+        if Following.objects.filter(follower=profile, following=self).exists():
+            raise Exception('')
+        Following.objects.create(following=self, follower=profile)
 
     def unfollow(self, profile):
-        if self.following.filter(profile=profile).exists():
-            self.following.remove(profile)
+        if self.id == profile.id:
+            raise Exception('')
+        if Following.objects.filter(follower=profile, following=self).exists():
+            Following.objects.get(follower=profile, following=self).delete()
         raise Exception('')
 
     @classmethod
@@ -58,11 +60,11 @@ class Profile(BaseModel):
 
     @property
     def favorites(self):
-        return self.bucket.filter(bucket__is_purchase=False)
+        return self.wish.all()
 
     @property
     def buckets(self):
-        return self.bucket.filter(bucket__is_purchase=True)
+        return self.basket.all()
 
 
 class Address(BaseModel):
@@ -128,3 +130,8 @@ class Notify(BaseModel):
     is_store = models.BooleanField(default=False)
     is_community = models.BooleanField(default=False)
     is_event = models.BooleanField(default=False)
+
+
+class Following(models.Model):
+    follower = models.ForeignKey('accounts.Profile', related_name='following', on_delete=models.CASCADE)
+    following = models.ForeignKey('accounts.Profile', related_name='followers', on_delete=models.CASCADE)

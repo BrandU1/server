@@ -35,7 +35,7 @@ class ProductSimpleSerializer(serializers.ModelSerializer):
         model = Product
         fields = ['id', 'backdrop_image', 'name', 'price', 'is_wish']
 
-    def get_is_wish(self, obj):
+    def get_is_wish(self, obj) -> bool:
         request = self.context.get("request", None)
         if request is None or request.user.is_anonymous:
             return False
