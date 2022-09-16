@@ -29,6 +29,18 @@ class Order(BaseModel):
     method = models.CharField(max_length=20)
     is_confirm = models.BooleanField(default=False)
 
+    def confirm_order(self, platform: str, price: int, name: str, payment_key: str, method: str):
+        self.is_confirm = True
+        self.save()
+        return Payment.objects.create(
+            order=self,
+            platform=platform,
+            price=price,
+            name=name,
+            payment_key=payment_key,
+            method=method
+        )
+
     @property
     def is_confirmed(self):
         return self.status == 'confirm'
@@ -40,3 +52,13 @@ class OrderProduct(models.Model):
     count = models.IntegerField(default=1)
     option = models.ForeignKey('products.ProductOption', on_delete=models.SET_NULL, null=True)
     discount = models.ForeignKey('products.Discount', on_delete=models.SET_NULL, null=True)
+
+
+class Payment(BaseModel):
+    order = models.OneToOneField('orders.Order', on_delete=models.CASCADE, related_name='payment')
+    platform = models.CharField(max_length=30)
+    price = models.IntegerField()
+    name = models.CharField(max_length=200)
+    payment_key = models.CharField(max_length=50)
+    method = models.CharField(max_length=10)
+
