@@ -1,14 +1,13 @@
 import os
 
 import requests
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import Profile
+import base64
 from core.permissions import IsAuthor
 from orders.models import Order
 from orders.serializers import OrderCreateSerializer, OrderSerializer
@@ -20,19 +19,40 @@ class OrderCreateAPIView(APIView):
         serializer = OrderCreateSerializer(data=self.request.data, context={'request': self.request})
         if serializer.is_valid():
             order = serializer.save()
-            serializer = OrderSerializer(order)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({
+                'order_number': order.order_number
+            }, status=status.HTTP_201_CREATED)
+        raise Exception(serializer.errors)
 
 
 class OrderTossConfirmAPIView(APIView):
+    permission_classes = [IsAuthor]
+
+    def get_object(self, order_number):
+        order = Order.objects.get(order_number=order_number)
+        self.check_object_permissions(self.request, order)
+        return order
+
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'payment_key': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+            'order_id': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+            'amount': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        }
+    ))
     def post(self, request, *args, **kwargs):
         payment_key = self.request.data['payment_key']
         order_id = self.request.data['order_id']
         amount = self.request.data['amount']
-        order = get_object_or_404(Order, order_number=order_id)
-        if order.price == amount:
+        order = self.get_object(order_number=order_id)
+        secret_key = os.environ.get('TOSSPAYMENT_SECRET_KEY')
+        print(os.environ.get('TOSSPAYMENT_SECRET_KEY'))
+        print(base64.b64encode(f'{secret_key}:'.encode('utf-8')).decode('utf-8'))
+        if order.price == int(amount):
             request = requests.post('https://api.tosspayments.com/v1/payments/confirm', headers={
-                'Authorization': f'Basic {os.environ.get("TOSSPAYMENT_SECRET_KEY")}'
+                'Authorization': f'Basic dGVzdF9za180R3Y2TGplS0Q4YWVna2thRDlCOHdZeEFkWHkxOg==',
+                'Content-Type': 'application/json',
             }, data={
                 'paymentKey': payment_key,
                 'orderId': order_id,

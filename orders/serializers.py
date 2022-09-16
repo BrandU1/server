@@ -15,7 +15,7 @@ class OrderProductSerializer(serializers.ModelSerializer):
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     products = OrderProductSerializer(many=True)
-    coupon = serializers.IntegerField(required=False)
+    coupon = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = Order
