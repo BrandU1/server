@@ -1,3 +1,4 @@
+import json
 import os
 
 import requests
@@ -10,7 +11,7 @@ from rest_framework.views import APIView
 import base64
 from core.permissions import IsAuthor
 from orders.models import Order
-from orders.serializers import OrderCreateSerializer, OrderSerializer
+from orders.serializers import OrderCreateSerializer, OrderSerializer, PaymentSerializer
 
 
 class OrderCreateAPIView(APIView):
@@ -42,25 +43,29 @@ class OrderTossConfirmAPIView(APIView):
         }
     ))
     def post(self, request, *args, **kwargs):
-        payment_key = self.request.data['payment_key']
-        order_id = self.request.data['order_id']
+        payment_key = self.request.data['paymentKey']
+        order_id = self.request.data['orderId']
         amount = self.request.data['amount']
         order = self.get_object(order_number=order_id)
         secret_key = os.environ.get('TOSSPAYMENT_SECRET_KEY')
-        print(os.environ.get('TOSSPAYMENT_SECRET_KEY'))
-        print(base64.b64encode(f'{secret_key}:'.encode('utf-8')).decode('utf-8'))
         if order.price == int(amount):
             request = requests.post('https://api.tosspayments.com/v1/payments/confirm', headers={
-                'Authorization': f'Basic dGVzdF9za180R3Y2TGplS0Q4YWVna2thRDlCOHdZeEFkWHkxOg==',
+                'Authorization': f'Basic {base64.b64encode(f"{secret_key}:".encode("ascii")).decode("ascii")}',
                 'Content-Type': 'application/json',
-            }, data={
-                'paymentKey': payment_key,
-                'orderId': order_id,
-                'amount': amount
-            })
-            print(request.json())
-            return Response(status=status.HTTP_200_OK)
-        raise Exception('')
+            }, data=json.dumps(self.request.data))
+            if request.status_code == 200:
+                data = request.json()
+                payment = order.confirm_order(
+                    platform='TOSS',
+                    price=int(data['totalAmount']),
+                    name=data['orderName'],
+                    payment_key=payment_key,
+                    method=data['method']
+                )
+                serializer = PaymentSerializer(payment)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            raise Exception(request.json())
+        raise Exception('요청하신 금액과 다릅니다.')
 
 
 class OrderTossCancelAPIView(APIView):
