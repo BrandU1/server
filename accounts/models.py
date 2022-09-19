@@ -123,6 +123,7 @@ class Basket(models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')
     product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='+')
     amount = models.IntegerField(default=1)
+    is_purchase = models.BooleanField(default=False)
 
 
 class Notify(BaseModel):

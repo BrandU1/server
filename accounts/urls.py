@@ -4,7 +4,8 @@ from accounts.views import (
     ProfileFollowAPIView, ProfileEditAPIView, ProfileAPIView, SetMainAddressAPIView,
     AddressListAPIView, AddressEditAPIView, ReviewListAPIView, ReviewAPIView, ProfilePointAPIView, NotifyAPIView,
     WishListAPIView, WishListListAPIView, BasketListAPIView, BasketAPIView, PostScrappedListAPIView,
-    PostScrappedCreateAPIView, ProfileFollowListAPIView, ProfileSummaryAPIView
+    PostScrappedCreateAPIView, ProfileFollowListAPIView, ProfileSummaryAPIView, BasketPurchaseUpdateAPIView,
+    PurchaseListAPIView
 )
 
 urlpatterns = [
@@ -24,6 +25,8 @@ urlpatterns = [
     path('scrapped/', PostScrappedListAPIView.as_view()),
     path('scrap/<int:pk>/', PostScrappedCreateAPIView.as_view()),
     path('baskets/', BasketListAPIView.as_view()),
+    path('baskets/purchase/', BasketPurchaseUpdateAPIView.as_view()),
+    path('purchase/', PurchaseListAPIView.as_view()),
     path('basket/<int:pk>/', BasketAPIView.as_view()),
     path('<int:pk>/follows/', ProfileFollowListAPIView.as_view()),
 ]

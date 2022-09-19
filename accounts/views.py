@@ -345,6 +345,15 @@ class BasketAPIView(APIView):
         raise Exception('')
 
 
+class BasketPurchaseAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(request_body=BasketSerializer(many=True))
+    def patch(self, request, *args, **kwargs):
+
+        return Response(status=status.HTTP_200_OK)
+
+
 class BasketListAPIView(ListAPIView):
     """
     장바구니 리스트 조회 API
@@ -357,6 +366,28 @@ class BasketListAPIView(ListAPIView):
     def get_queryset(self):
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         return self.queryset.filter(profile=profile)
+
+
+class BasketPurchaseUpdateAPIView(APIView):
+    @swagger_auto_schema(request_body=BasketSerializer(many=True))
+    def patch(self, request, *args, **kwargs):
+        basket_ids = [instance['id'] for instance in self.request.data]
+        for idx, basket_id in enumerate(basket_ids):
+            basket = Basket.objects.get(pk=basket_id)
+            basket.amount = self.request.data[idx]['amount']
+            basket.is_purchase = self.request.data[idx]['is_purchase']
+            basket.save()
+        return Response(status=status.HTTP_200_OK)
+
+
+class PurchaseListAPIView(ListAPIView):
+    queryset = Basket.objects.all()
+    serializer_class = BasketSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        return self.queryset.filter(profile=profile, is_purchase=True)
 
 
 class PostScrappedListAPIView(ListAPIView):
