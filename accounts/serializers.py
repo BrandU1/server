@@ -65,11 +65,11 @@ class WishListSerializer(serializers.ModelSerializer):
 
 
 class BasketSerializer(serializers.ModelSerializer):
-    product = ProductSimpleSerializer()
+    product = ProductSimpleSerializer(read_only=True)
 
     class Meta:
         model = Basket
-        fields = ['id', 'product', 'amount']
+        fields = ['id', 'product', 'amount', 'is_purchase']
 
 
 class ProfileSimpleSerializer(serializers.ModelSerializer):
