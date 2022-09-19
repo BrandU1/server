@@ -5,7 +5,7 @@ from accounts.views import (
     AddressListAPIView, AddressEditAPIView, ReviewListAPIView, ReviewAPIView, ProfilePointAPIView, NotifyAPIView,
     WishListAPIView, WishListListAPIView, BasketListAPIView, BasketAPIView, PostScrappedListAPIView,
     PostScrappedCreateAPIView, ProfileFollowListAPIView, ProfileSummaryAPIView, BasketPurchaseUpdateAPIView,
-    PurchaseListAPIView
+    PurchaseListAPIView, OrderListAPIView
 )
 
 urlpatterns = [
@@ -29,4 +29,5 @@ urlpatterns = [
     path('purchase/', PurchaseListAPIView.as_view()),
     path('basket/<int:pk>/', BasketAPIView.as_view()),
     path('<int:pk>/follows/', ProfileFollowListAPIView.as_view()),
+    path('orders/', OrderListAPIView.as_view())
 ]
