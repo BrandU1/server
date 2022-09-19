@@ -12,6 +12,8 @@ from accounts.serializers import AddressSerializer, ProfileSerializer, ProfilePo
 from communities.models import Post
 from communities.serializers import PostSimpleSerializer
 from core.permissions import IsAuthor
+from orders.models import Order
+from orders.serializers import OrderSerializer
 from products.models import Review, Product
 from products.serializers import ReviewSerializer
 
@@ -427,3 +429,13 @@ class PostScrappedCreateAPIView(APIView):
         post = get_object_or_404(Post, pk=pk)
         profile.scrapped.remove(post)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class OrderListAPIView(ListAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
+        return self.queryset.filter(profile=profile)

@@ -13,13 +13,21 @@ class OrderProductSerializer(serializers.ModelSerializer):
         fields = ['product', 'count', 'option', 'discount']
 
 
+class OrderProductSimpleSerializer(serializers.ModelSerializer):
+    product = ProductSimpleSerializer()
+
+    class Meta:
+        model = OrderProduct
+        fields = ['product', 'count', 'option', 'discount']
+
+
 class OrderCreateSerializer(serializers.ModelSerializer):
     products = OrderProductSerializer(many=True)
     coupon = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = Order
-        fields = ['address', 'products', 'price', 'coupon', 'used_point', 'method']
+        fields = ['name', 'address', 'products', 'price', 'coupon', 'used_point', 'method']
 
     def validate_address(self, address):
         user = self.context.get("request").user
@@ -38,8 +46,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer(read_only=True)
-    products = OrderProductSerializer(many=True)
+    products = OrderProductSimpleSerializer(many=True)
     address = AddressSerializer()
 
     class Meta:
