@@ -73,8 +73,7 @@ class OrderTossConfirmAPIView(APIView):
 
 
 class OrderTossCancelAPIView(APIView):
-    def delete(self, request, *args, **kwargs):
-        pk = kwargs.get('pk', None)
+    def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         order = Order.objects.get(id=pk)
@@ -90,8 +89,7 @@ class OrderAPIView(APIView):
         return order
 
     @swagger_auto_schema(responses={200: OrderSerializer()})
-    def get(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk', None)
+    def get(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception()
         order = self.get_object(pk)
@@ -99,8 +97,7 @@ class OrderAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(responses={204: ''})
-    def delete(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk', None)
+    def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception()
         order = self.get_object(pk)
