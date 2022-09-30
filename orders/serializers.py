@@ -3,7 +3,7 @@ from rest_framework.exceptions import ValidationError
 
 from accounts.models import Profile, Address
 from accounts.serializers import ProfileSerializer, AddressSerializer
-from orders.models import Order, OrderProduct, Payment
+from orders.models import Order, OrderProduct, Payment, Delivery, DeliveryTracking
 from products.serializers import ProductSerializer, ProductSimpleSerializer
 
 
@@ -60,3 +60,17 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = '__all__'
+
+
+class DeliveryTrackingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryTracking
+        fields = ['datetime', 'kind', 'place', 'phone_number']
+
+
+class DeliverySerializer(serializers.ModelSerializer):
+    tracking = DeliveryTrackingSerializer(many=True)
+
+    class Meta:
+        model = Delivery
+        fields = ['id', 'order', 'status', 'invoice_number', 'is_done', 'tracking']

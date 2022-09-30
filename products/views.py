@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from accounts.serializers import ReviewListSerializer
 from core.paginations import SmallResultsSetPagination
-from .models import Product, MainCategory, Review
+from .models import Product, MainCategory, Review, SubCategory
 from .serializers import ProductSimpleSerializer, MainCategorySerializer, ProductSerializer, ReviewSerializer
 
 
@@ -38,7 +38,8 @@ class ProductCategoryListView(ListAPIView):
         pk = self.kwargs.get('pk', None)
         if pk is None:
             raise Exception('')
-        return self.queryset.filter(category_id=pk)
+        queryset = self.queryset.filter(category__main_category_id=pk)
+        return queryset
 
 
 class ProductReviewListAPIView(ListAPIView):

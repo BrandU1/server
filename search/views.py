@@ -75,8 +75,7 @@ class SearchWordDeleteAPIView(APIView):
         self.check_object_permissions(self.request, search)
         return search
 
-    def delete(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk', None)
+    def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         search = self.get_object(pk)

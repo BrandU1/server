@@ -64,8 +64,7 @@ class ProfileFollowAPIView(APIView):
 
 
 class ProfileFollowListAPIView(APIView):
-    def get(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk', None)
+    def get(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         profile = Profile.get_profile_or_exception(pk)
@@ -159,8 +158,7 @@ class AddressEditAPIView(APIView):
         return address
 
     @swagger_auto_schema(request_body=AddressSerializer)
-    def patch(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk', None)
+    def patch(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         address = self.get_object(pk)
@@ -170,8 +168,7 @@ class AddressEditAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk', None)
+    def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         address = self.get_object(pk)
@@ -183,9 +180,8 @@ class SetMainAddressAPIView(APIView):
     """
     기본 배송지 설정 API
     """
-    def patch(self, request, *args, **kwargs):
+    def patch(self, request, pk=None, *args, **kwargs):
         profile = Profile.get_profile_or_exception(self.request.user.profile.id)
-        pk = kwargs.get('pk', None)
         if pk is None:
             raise Exception('')
         address = Address.objects.get(pk=pk)
@@ -210,8 +206,7 @@ class ReviewAPIView(APIView):
         return review
 
     @swagger_auto_schema(request_body=ReviewSerializer)
-    def put(self, request, *args, **kwargs):
-        pk = kwargs.get('pk', None)
+    def put(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         review = self.get_object(pk)
@@ -221,8 +216,7 @@ class ReviewAPIView(APIView):
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk', None)
+    def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         review = self.get_object(pk)
@@ -275,8 +269,7 @@ class WishListAPIView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
-        pk = kwargs.get('pk', None)
+    def post(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
@@ -286,8 +279,7 @@ class WishListAPIView(APIView):
         profile.wish.add(product)
         return Response(status=status.HTTP_201_CREATED)
 
-    def delete(self, request, *args, **kwargs):
-        pk = kwargs.get('pk', None)
+    def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
@@ -324,8 +316,7 @@ class BasketAPIView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk', None)
+    def post(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         product = get_object_or_404(Product, pk=pk)
@@ -335,8 +326,7 @@ class BasketAPIView(APIView):
         profile.basket.add(product)
         return Response(status=status.HTTP_201_CREATED)
 
-    def delete(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk', None)
+    def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
@@ -412,8 +402,7 @@ class PostScrappedCreateAPIView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
-        pk = kwargs.get('pk', None)
+    def post(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
@@ -421,8 +410,7 @@ class PostScrappedCreateAPIView(APIView):
         profile.scrapped.add(post)
         return Response(status=status.HTTP_201_CREATED)
 
-    def delete(self, request, *args, **kwargs):
-        pk = kwargs.get('pk', None)
+    def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)

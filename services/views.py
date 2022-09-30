@@ -77,8 +77,7 @@ class InquiryUpdateAPIView(APIView):
         return inquiry
 
     @swagger_auto_schema(request_body=InquirySerializer)
-    def patch(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk', None)
+    def patch(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         inquiry = self.get_object(pk)
@@ -89,8 +88,7 @@ class InquiryUpdateAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, *args, **kwargs):
-        pk = self.kwargs.get('pk', None)
+    def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
             raise Exception('')
         inquiry = self.get_object(pk)
