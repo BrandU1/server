@@ -24,6 +24,7 @@ class Order(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     address = models.ForeignKey('accounts.Address', on_delete=models.CASCADE)
     name = models.CharField(max_length=30)
+    status = models.CharField(max_length=10, default='paid')
     order_number = models.CharField(max_length=20, unique=True, default=generate_order_number)
     coupon = models.ForeignKey('events.CouponHold', on_delete=models.CASCADE, null=True)
     used_point = models.IntegerField(default=0)
@@ -67,7 +68,7 @@ class Payment(BaseModel):
 
 class Delivery(BaseModel):
     order = models.OneToOneField('orders.Order', on_delete=models.CASCADE, related_name='delivery')
-    status = models.CharField(max_length=10, default='paid')
+    status = models.CharField(max_length=20, default='paid')
     tracking_level = models.IntegerField(default=1)
     invoice_number = models.CharField(max_length=30)
     courier_code = models.CharField(max_length=3, null=True, blank=True)
@@ -125,6 +126,6 @@ class Delivery(BaseModel):
 class DeliveryTracking(models.Model):
     delivery = models.ForeignKey('orders.Delivery', on_delete=models.CASCADE, related_name='tracking')
     datetime = models.DateTimeField()
-    kind = models.CharField(max_length=10)
+    kind = models.CharField(max_length=30)
     place = models.CharField(max_length=20)
     phone_number = models.CharField(max_length=15)
