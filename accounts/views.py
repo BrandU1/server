@@ -6,11 +6,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, ListCreateAPIView, UpdateAPIView, get_object_or_404
 
-from accounts.models import Profile, Address, Notify, Basket, WishList
+from accounts.models import Profile, Address, Notify, Basket, WishList, Following
 from accounts.serializers import AddressSerializer, ProfileSerializer, ProfilePointSerializer, \
-    NotifySerializer, BasketSerializer, WishListSerializer, ProfileSimpleSerializer
+    NotifySerializer, BasketSerializer, WishListSerializer, ProfileSimpleSerializer, FollowingProfileSerializer
 from communities.models import Post
 from communities.serializers import PostSimpleSerializer
+from core.exceptions.common import KeyDoesNotExistException, ProfileNotMatchException
+from core.exceptions.product import RelationAlreadyExistException, RelationDoesNotExistException
 from core.permissions import IsAuthor
 from orders.models import Order
 from orders.serializers import OrderSerializer
@@ -66,10 +68,10 @@ class ProfileFollowAPIView(APIView):
 class ProfileFollowListAPIView(APIView):
     def get(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         profile = Profile.get_profile_or_exception(pk)
-        follower_serializer = ProfileSimpleSerializer(profile.following.all(), many=True)
-        following_serializer = ProfileSimpleSerializer(profile.following.all(), many=True)
+        follower_serializer = FollowingProfileSerializer(profile.following.all(), many=True)
+        following_serializer = FollowingProfileSerializer(profile.following.all(), many=True)
         return Response({
             'follower': follower_serializer.data,
             'following': following_serializer.data,
@@ -83,6 +85,10 @@ class ProfileEditAPIView(UpdateAPIView):
     """
     permission_classes = [IsAuthenticated]
     serializer_class = ProfileSerializer
+
+    @swagger_auto_schema(request_body=ProfileSerializer)
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
 
     def get_object(self) -> Profile:
         return Profile.get_profile_or_exception(self.request.user.profile.id)
@@ -119,10 +125,10 @@ class ProfileSummaryAPIView(APIView):
             },
             'orders': {
                 'all': orders.all().count(),
-                'paid': orders.filter(status='paid').count(),
-                'delivery': orders.filter(status='delivery').count(),
-                'complete': orders.filter(status='complete').count(),
-                'confirm': orders.filter(status='confirm').count()
+                'paid': len([order for order in orders.all() if order.status == 'paid']),
+                'delivery': len([order for order in orders.all() if order.status == 'delivery']),
+                'complete': len([order for order in orders.all() if order.status == 'complete']),
+                'confirm': len([order for order in orders.all() if order.status == 'confirm'])
             }
         }, status=status.HTTP_200_OK)
 
@@ -160,7 +166,7 @@ class AddressEditAPIView(APIView):
     @swagger_auto_schema(request_body=AddressSerializer)
     def patch(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         address = self.get_object(pk)
         serializer = AddressSerializer(address, data=self.request.data, context={'request': request}, partial=True)
         if serializer.is_valid():
@@ -170,7 +176,7 @@ class AddressEditAPIView(APIView):
 
     def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         address = self.get_object(pk)
         address.delete()
         return Response(status=status.HTTP_200_OK)
@@ -183,11 +189,11 @@ class SetMainAddressAPIView(APIView):
     def patch(self, request, pk=None, *args, **kwargs):
         profile = Profile.get_profile_or_exception(self.request.user.profile.id)
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         address = Address.objects.get(pk=pk)
 
         if address.profile != profile:
-            raise Exception('')
+            raise ProfileNotMatchException()
 
         address.set_main()
         return Response(status=status.HTTP_201_CREATED)
@@ -205,10 +211,17 @@ class ReviewAPIView(APIView):
         self.check_object_permissions(self.request, review)
         return review
 
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk is None:
+            raise KeyDoesNotExistException()
+        review = self.get_object(pk)
+        serializer = ReviewSerializer(review)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @swagger_auto_schema(request_body=ReviewSerializer)
     def put(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         review = self.get_object(pk)
         serializer = ReviewSerializer(review, data=self.request.data, context={'request': request})
         if serializer.is_valid():
@@ -218,7 +231,7 @@ class ReviewAPIView(APIView):
 
     def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         review = self.get_object(pk)
         review.is_deleted = True
         review.save()
@@ -271,23 +284,23 @@ class WishListAPIView(APIView):
 
     def post(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         product = get_object_or_404(Product, pk=pk)
         if profile.wish.filter(id=product.id).exists():
-            raise Exception('')
+            raise RelationAlreadyExistException()
         profile.wish.add(product)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         product = get_object_or_404(Product, pk=pk)
         if profile.wish.filter(id=product.id).exists():
             profile.wish.remove(product)
             return Response(status=status.HTTP_204_NO_CONTENT)
-        raise Exception('')
+        raise RelationDoesNotExistException()
 
 
 class WishListListAPIView(ListAPIView):
@@ -318,23 +331,23 @@ class BasketAPIView(APIView):
 
     def post(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         product = get_object_or_404(Product, pk=pk)
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         if profile.basket.filter(id=product.id).exists():
-            raise Exception('')
+            raise RelationAlreadyExistException()
         profile.basket.add(product)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         product = Product.objects.get(pk=pk)
         if profile.basket.filter(id=product.id).exists():
             profile.basket.remove(product)
             return Response(status=status.HTTP_204_NO_CONTENT)
-        raise Exception('')
+        raise RelationDoesNotExistException()
 
 
 class BasketPurchaseAPIView(APIView):
@@ -404,7 +417,7 @@ class PostScrappedCreateAPIView(APIView):
 
     def post(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         post = get_object_or_404(Post, pk=pk)
         profile.scrapped.add(post)
@@ -412,7 +425,7 @@ class PostScrappedCreateAPIView(APIView):
 
     def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         post = get_object_or_404(Post, pk=pk)
         profile.scrapped.remove(post)

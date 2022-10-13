@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import UniqueConstraint, Deferrable
 
+from core.exceptions.product import RelationAlreadyExistException, RelationDoesNotExistException
+from core.exceptions.profile import ProfileNotAllowException, ProfileNotExistException
 from core.mixins import BaseModel
 
 
@@ -23,7 +25,8 @@ class Platform(BaseModel):
 
 class Profile(BaseModel):
     user = models.OneToOneField('accounts.User', on_delete=models.CASCADE)
-    profile_image = models.ImageField(upload_to='profile/%Y/%m/%d')
+    backdrop_image = models.ImageField(upload_to='profile/%Y/%m/%d', null=True, blank=True)
+    profile_image = models.ImageField(upload_to='profile/%Y/%m/%d', null=True, blank=True)
     nickname = models.CharField(max_length=100, null=True)
     name = models.CharField(max_length=10, null=True)
     email = models.EmailField(null=True)
@@ -40,23 +43,23 @@ class Profile(BaseModel):
 
     def follow(self, profile):
         if self.id == profile.id:
-            raise Exception('')
+            raise ProfileNotAllowException()
         if Following.objects.filter(follower=profile, following=self).exists():
-            raise Exception('')
+            raise RelationAlreadyExistException()
         Following.objects.create(following=self, follower=profile)
 
     def unfollow(self, profile):
         if self.id == profile.id:
-            raise Exception('')
+            raise ProfileNotAllowException()
         if Following.objects.filter(follower=profile, following=self).exists():
             Following.objects.get(follower=profile, following=self).delete()
-        raise Exception('')
+        raise RelationDoesNotExistException()
 
     @classmethod
     def get_profile_or_exception(cls, profile_id: int):
         if cls.objects.filter(id=profile_id).exists():
             return cls.objects.get(id=profile_id)
-        raise Exception('')
+        raise ProfileNotExistException()
 
     @property
     def favorites(self):

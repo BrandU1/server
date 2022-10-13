@@ -51,7 +51,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = '__all__'
+        fields = ['id', 'products', 'address', 'created', 'name', 'order_number',
+                  'status', 'used_point', 'price', 'method', 'is_confirm', 'is_payment_confirm', 'coupon']
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -65,7 +66,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 class DeliveryTrackingSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryTracking
-        fields = ['datetime', 'kind', 'place', 'phone_number']
+        fields = ['datetime', 'level', 'kind', 'place', 'phone_number']
 
 
 class DeliverySerializer(serializers.ModelSerializer):

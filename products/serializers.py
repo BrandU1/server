@@ -82,3 +82,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         profile = Profile.get_profile_or_exception(user.profile.id)
         return Review.objects.create(profile=profile, **validated_data)
+
+    def update(self, instance, validated_data):
+        instance.is_write = True
+        instance.save()
+        super().update(instance, validated_data)
+        return instance

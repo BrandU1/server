@@ -71,14 +71,14 @@ class ProductImages(models.Model):
 class Review(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     product = models.ForeignKey('products.Product', on_delete=models.SET_NULL, null=True)
-    order = models.OneToOneField('orders.Order', on_delete=models.CASCADE)
+    order = models.ForeignKey('orders.Order', on_delete=models.CASCADE, related_name='reviews')
     star = models.SmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(10)])
     description = models.TextField(null=True, blank=True)
     is_write = models.BooleanField(default=False)
 
     @property
     def product_name(self):
-        return self.order.product.name
+        return self.product.name
 
     @property
     def payment_day(self):

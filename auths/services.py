@@ -5,6 +5,7 @@ import requests
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.files.images import ImageFile
 
 from accounts.models import User, Platform, Profile
 
@@ -133,11 +134,21 @@ def user_create(email: str, nickname: str | None, profile_image: str | None, pla
     if created:
         user.set_password(platform + platform_id)
         Platform.objects.create(user=user, platform=platform, platform_id=platform_id)
-        Profile.objects.create(
+        profile = Profile.objects.create(
             user=user,
-            profile_image=profile_image,
             nickname=nickname if nickname is not None else ''
         )
+        if profile_image:
+            image = ImageFile(open(f'temp/{platform + platform_id}_image.jpg', 'wb'))
+            response = requests.get(profile_image)
+            image.write(response.content)
+            profile.profile_image.save(
+                os.path.basename(f'{platform + platform_id}_image.jpg'),
+                ImageFile(open(f'temp/{platform + platform_id}_image.jpg', 'rb'))
+            )
+            profile.save()
+            os.remove(f'temp/{platform + platform_id}_image.jpg')
+
     else:
         if Platform.objects.filter(platform=platform, platform_id=platform_id).first():
             return user

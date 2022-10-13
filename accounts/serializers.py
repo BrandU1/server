@@ -22,6 +22,12 @@ class AddressSerializer(serializers.ModelSerializer):
         return Address.objects.create(profile=profile, **validated_data)
 
 
+class FollowingProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['id', 'nickname', 'social_link']
+
+
 class PointSerializer(serializers.ModelSerializer):
     class Meta:
         model = Point
@@ -79,8 +85,7 @@ class ProfileSimpleSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    profile_image = serializers.ImageField(use_url=True, read_only=True)
+    profile_image = serializers.ImageField(use_url=True)
     nickname = serializers.CharField(allow_blank=True)
     name = serializers.CharField(allow_blank=True)
     phone_number = serializers.CharField(allow_blank=True)
@@ -91,7 +96,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['id', 'profile_image', 'nickname', 'name', 'phone_number',
+        read_only_fields = ['id']
+        fields = ['profile_image', 'nickname', 'name', 'phone_number',
                   'email', 'social_link', 'description', 'platforms']
 
 
