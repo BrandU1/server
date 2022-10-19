@@ -25,7 +25,12 @@ class Inquiry(BaseModel):
 
     @property
     def is_answer(self) -> bool:
-        return bool(InquiryAnswer.objects.filter(inquiry=self).exists())
+        return bool(hasattr(self, 'inquiryanswer'))
+
+
+class InquiryImage(models.Model):
+    inquiry = models.ForeignKey('services.Inquiry', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='inquiry/%Y/')
 
 
 class InquiryAnswer(BaseModel):

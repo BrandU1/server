@@ -72,10 +72,11 @@ class WishListSerializer(serializers.ModelSerializer):
 
 class BasketSerializer(serializers.ModelSerializer):
     product = ProductSimpleSerializer(read_only=True)
+    product_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Basket
-        fields = ['id', 'product', 'amount', 'is_purchase']
+        fields = ['product', 'product_id', 'amount', 'is_purchase']
 
 
 class ProfileSimpleSerializer(serializers.ModelSerializer):
@@ -85,7 +86,9 @@ class ProfileSimpleSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    profile_image = serializers.ImageField(use_url=True)
+    id = serializers.ReadOnlyField()
+    backdrop_image = serializers.ImageField(use_url=True, allow_empty_file=True)
+    profile_image = serializers.ImageField(use_url=True, allow_empty_file=True)
     nickname = serializers.CharField(allow_blank=True)
     name = serializers.CharField(allow_blank=True)
     phone_number = serializers.CharField(allow_blank=True)
@@ -96,8 +99,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        read_only_fields = ['id']
-        fields = ['profile_image', 'nickname', 'name', 'phone_number',
+        fields = ['id', 'backdrop_image', 'profile_image', 'nickname', 'name', 'phone_number',
                   'email', 'social_link', 'description', 'platforms']
 
 

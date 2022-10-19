@@ -1,11 +1,13 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import Profile
+from core.exceptions.common import KeyDoesNotExistException
 from core.paginations import XSmallResultsSetPagination
 from core.permissions import IsAuthor
 from services.models import Notice, Inquiry, FAQ, MainInfo
@@ -53,10 +55,16 @@ class FAQListAPIView(ListAPIView):
 
 
 class InquiryListCreateAPIView(ListCreateAPIView):
-    queryset = Inquiry.objects.all()
+    queryset = Inquiry.not_deleted.all()
     permission_classes = [IsAuthenticated]
     serializer_class = InquirySerializer
     pagination_class = XSmallResultsSetPagination
+
+    def get_parsers(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return []
+
+        return super().get_parsers()
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -68,30 +76,13 @@ class InquiryListCreateAPIView(ListCreateAPIView):
         return self.queryset.filter(profile=profile).order_by('-created')
 
 
-class InquiryUpdateAPIView(APIView):
+class InquiryRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthor]
-
-    def get_object(self, pk):
-        inquiry = Inquiry.objects.get(pk=pk)
-        self.check_object_permissions(self.request, inquiry)
-        return inquiry
-
-    @swagger_auto_schema(request_body=InquirySerializer)
-    def patch(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise Exception('')
-        inquiry = self.get_object(pk)
-        print(self.request.data)
-        serializer = InquirySerializer(inquiry, data=self.request.data, context={'request': request}, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    queryset = Inquiry.not_deleted.all()
+    serializer_class = InquirySerializer
 
     def delete(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise Exception('')
-        inquiry = self.get_object(pk)
+        inquiry: Inquiry = self.get_object()
         inquiry.is_deleted = True
         inquiry.save()
         return Response(status=status.HTTP_200_OK)

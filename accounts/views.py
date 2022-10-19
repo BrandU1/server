@@ -1,14 +1,17 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, ListCreateAPIView, UpdateAPIView, get_object_or_404
 
-from accounts.models import Profile, Address, Notify, Basket, WishList, Following
-from accounts.serializers import AddressSerializer, ProfileSerializer, ProfilePointSerializer, \
-    NotifySerializer, BasketSerializer, WishListSerializer, ProfileSimpleSerializer, FollowingProfileSerializer
+from accounts.models import Profile, Address, Notify, Basket, WishList
+from accounts.serializers import (
+    AddressSerializer, ProfileSerializer, ProfilePointSerializer,
+    NotifySerializer, BasketSerializer, WishListSerializer, FollowingProfileSerializer
+)
 from communities.models import Post
 from communities.serializers import PostSimpleSerializer
 from core.exceptions.common import KeyDoesNotExistException, ProfileNotMatchException
@@ -79,16 +82,14 @@ class ProfileFollowListAPIView(APIView):
 
 
 class ProfileEditAPIView(UpdateAPIView):
+    parser_classes = [MultiPartParser]
+
     """
     사용자 프로필 정보 수정 API
     ---
     """
     permission_classes = [IsAuthenticated]
     serializer_class = ProfileSerializer
-
-    @swagger_auto_schema(request_body=ProfileSerializer)
-    def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
 
     def get_object(self) -> Profile:
         return Profile.get_profile_or_exception(self.request.user.profile.id)
@@ -283,8 +284,6 @@ class WishListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise KeyDoesNotExistException()
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         product = get_object_or_404(Product, pk=pk)
         if profile.wish.filter(id=product.id).exists():
@@ -293,8 +292,6 @@ class WishListAPIView(APIView):
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise KeyDoesNotExistException()
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         product = get_object_or_404(Product, pk=pk)
         if profile.wish.filter(id=product.id).exists():
@@ -374,11 +371,11 @@ class BasketListAPIView(ListAPIView):
 
 
 class BasketPurchaseUpdateAPIView(APIView):
-    @swagger_auto_schema(request_body=BasketSerializer(many=True))
+    @swagger_auto_schema(request_body=BasketSerializer)
     def patch(self, request, *args, **kwargs):
-        basket_ids = [instance['id'] for instance in self.request.data]
-        for idx, basket_id in enumerate(basket_ids):
-            basket = Basket.objects.get(pk=basket_id)
+        product_ids = [instance['product_id'] for instance in self.request.data]
+        for idx, product_id in enumerate(product_ids):
+            basket = Basket.objects.get(product_id=product_id)
             basket.amount = self.request.data[idx]['amount']
             basket.is_purchase = self.request.data[idx]['is_purchase']
             basket.save()

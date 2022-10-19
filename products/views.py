@@ -14,6 +14,11 @@ class ProductRetrieveAPIView(RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
+
 
 class BranduHotDealListView(ListAPIView):
     queryset = Product.objects.all()
