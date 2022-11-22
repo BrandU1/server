@@ -10,12 +10,24 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from pathlib import Path
-from dotenv import load_dotenv
 import os
 from datetime import timedelta
+from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def get_env_variable(var_name):
+    """ 환경 변수를 가져오거나 예외를 반환하는 함수 """
+    try:
+        return os.environ[var_name]
+    except KeyError:
+        error_message = f"Set the {var_name} environment variable"
+        raise ImproperlyConfigured(error_message)
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +41,9 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = eval(os.environ.get('DEBUG'))
 
-ALLOWED_HOSTS = ['api.themealways.com', '3.34.97.255', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = [
+    'api.brandu.shop', 'themealways.com', '3.34.97.255', '127.0.0.1', 'localhost'
+]
 
 # Application definition
 
@@ -97,10 +111,10 @@ WSGI_APPLICATION = 'server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': os.environ.get('DATABASE_HOST'),
+        'NAME': get_env_variable('DATABASE_NAME'),
+        'USER': get_env_variable('DATABASE_USER'),
+        'PASSWORD': get_env_variable('DATABASE_PASSWORD'),
+        'HOST': get_env_variable('DATABASE_HOST'),
         'PORT': '5432',
     }
 }
@@ -180,14 +194,11 @@ SWAGGER_SETTINGS = {
     }
 }
 
-CORS_ORIGIN_ALLOW_ALL = True
-
-# CORS_ORIGIN_WHITELIST = [
-#     # Test 를 위한 설정
-#     'http://localhost:3000',
-#     'http://127.0.0.1:3000',
-#     'https://www.themealways.com',
-# ]
+CORS_ORIGIN_WHITELIST = [
+    # Test 를 위한 설정
+    'http://localhost:3000',
+    'https://brandu.shop',
+]
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -208,11 +219,11 @@ AWS_S3_REGION_NAME = 'ap-northeast-2'
 AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_S3_ADDRESSING_STYLE = 'virtual'
 
-AWS_S3_ACCESS_KEY_ID = os.environ.get('AMAZON_S3_ACCESS_KEY')
-AWS_S3_SECRET_ACCESS_KEY = os.environ.get('AMAZON_S3_SECRET')
-AWS_STORAGE_BUCKET_NAME = os.environ.get('AMAZON_S3_BUCKET')
+AWS_S3_ACCESS_KEY_ID = get_env_variable('AMAZON_S3_ACCESS_KEY')
+AWS_S3_SECRET_ACCESS_KEY = get_env_variable('AMAZON_S3_SECRET')
+AWS_STORAGE_BUCKET_NAME = get_env_variable('AMAZON_S3_BUCKET')
 
 if DEBUG:
     BASE_BACKEND_URL = 'http://localhost:8000'
 else:
-    BASE_BACKEND_URL = 'https://api.themealways.com'
+    BASE_BACKEND_URL = 'https://www.themealways.com'

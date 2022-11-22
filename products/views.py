@@ -1,5 +1,5 @@
 from rest_framework import status
-from rest_framework.generics import ListAPIView, RetrieveAPIView, ListCreateAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -14,20 +14,10 @@ class ProductRetrieveAPIView(RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
-
 
 class BranduHotDealListView(ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSimpleSerializer
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
 
 
 class CategoryListView(ListAPIView):
@@ -62,7 +52,7 @@ class ProductCategoryListView(ListAPIView):
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return Review.objects.none()
-        
+
         pk = self.kwargs.get('pk', None)
         if pk is None:
             raise Exception('')
@@ -88,8 +78,3 @@ class ProductReviewListAPIView(ListAPIView):
 class ReviewCreateAPIView(CreateAPIView):  # 리뷰 생성 관련 Views
     permission_classes = [IsAuthenticated]
     serializer_class = ReviewSerializer
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context

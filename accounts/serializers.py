@@ -1,25 +1,38 @@
 from rest_framework import serializers
 
 from accounts.models import Address, Profile, Point, Notify, Platform, Basket, WishList
-from products.models import Review
+from products.models import Review, Product
 from products.serializers import ProductSimpleSerializer
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    is_main = serializers.BooleanField(read_only=True)
-
     class Meta:
         model = Address
         fields = ['id', 'is_main', 'name', 'recipient', 'address', 'road_name_address',
                   'detail_address', 'zip_code', 'phone_number', 'memo']
+        extra_kwargs = {
+            'is_main': {'read_only': True}
+        }
 
-    def create(self, validated_data):
+    def create(self, validated_data) -> Address:
         user = self.context.get("request").user
         profile = Profile.get_profile_or_exception(user.profile.id)
         if not Address.objects.filter(profile=profile, is_main=True).exists():
-            return Address.objects.create(profile=profile, **validated_data, is_main=True)
-        return Address.objects.create(profile=profile, **validated_data)
+            return Address.objects.create(**validated_data, is_main=True)
+        return Address.objects.create(**validated_data)
+
+
+class AddressEditSerializer(AddressSerializer):
+    class Meta(AddressSerializer.Meta):
+        extra_kwargs = {
+            'name': {'required': False},
+            'recipient': {'required': False},
+            'address': {'required': False},
+            'road_name_address': {'required': False},
+            'detail_address': {'required': False},
+            'zip_code': {'required': False},
+            'phone_number': {'required': False},
+        }
 
 
 class FollowingProfileSerializer(serializers.ModelSerializer):
@@ -40,6 +53,10 @@ class ProfilePointSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['point', 'point_history']
+
+
+class ProfileSummarySerializer(serializers.ModelSerializer):
+    pass
 
 
 class NotifySerializer(serializers.ModelSerializer):
@@ -79,6 +96,22 @@ class BasketSerializer(serializers.ModelSerializer):
         fields = ['product', 'product_id', 'amount', 'is_purchase']
 
 
+class BasketPurchaseSerializer(serializers.Serializer):
+    product = serializers.IntegerField()
+    amount = serializers.IntegerField()
+
+    def validate(self, attrs):
+        if not Product.objects.filter(pk=attrs['product']).exists():
+            raise serializers.ValidationError("상품이 존재하지 않습니다.")
+
+        profile_id = self.context.get("request").user.profile.id
+        
+        if not Basket.objects.filter(product_id=attrs['product'], profile_id=profile_id).exists():
+            raise serializers.ValidationError("장바구니에 상품이 존재하지 않습니다.")
+
+        return attrs
+
+
 class ProfileSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
@@ -86,7 +119,6 @@ class ProfileSimpleSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
     backdrop_image = serializers.ImageField(use_url=True, allow_empty_file=True)
     profile_image = serializers.ImageField(use_url=True, allow_empty_file=True)
     nickname = serializers.CharField(allow_blank=True)

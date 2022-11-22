@@ -9,8 +9,6 @@ class Post(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     backdrop_image = models.ImageField(upload_to='community/backdrop/%Y-%m', null=True)
-    comments = models.ManyToManyField('accounts.Profile', through='communities.Comment',
-                                      through_fields=('post', 'profile'), related_name='+')
     hits = models.PositiveIntegerField(default=1)
 
     @property

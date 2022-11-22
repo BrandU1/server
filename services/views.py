@@ -1,13 +1,10 @@
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
-from rest_framework.parsers import MultiPartParser
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import Profile
-from core.exceptions.common import KeyDoesNotExistException
 from core.paginations import XSmallResultsSetPagination
 from core.permissions import IsAuthor
 from services.models import Notice, Inquiry, FAQ, MainInfo
@@ -66,11 +63,6 @@ class InquiryListCreateAPIView(ListCreateAPIView):
 
         return super().get_parsers()
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
-
     def get_queryset(self):
         profile = Profile.get_profile_or_exception(self.request.user.profile.id)
         return self.queryset.filter(profile=profile).order_by('-created')
@@ -81,8 +73,8 @@ class InquiryRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Inquiry.not_deleted.all()
     serializer_class = InquirySerializer
 
-    def delete(self, request, pk=None, *args, **kwargs):
-        inquiry: Inquiry = self.get_object()
-        inquiry.is_deleted = True
-        inquiry.save()
-        return Response(status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None, *args, **kwargs):
+        instance: Inquiry = self.get_object()
+        instance.is_deleted = True
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)

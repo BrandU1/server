@@ -121,12 +121,46 @@ class WishList(models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')
     product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='+')
 
+    @staticmethod
+    def add(profile, product):
+        """ WishList에 새로운 상품을 추가하는 함수 """
+        if profile.wish.filter(id=product.id).exists():
+            raise RelationAlreadyExistException()
+        profile.wish.add(product)
+
+    @staticmethod
+    def remove(profile, product):
+        """ WishList에 있는 상품을 제거하는 함수 """
+        if profile.wish.filter(id=product.id).exists():
+            raise RelationDoesNotExistException()
+        profile.wish.remove(product)
+
 
 class Basket(models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')
     product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='+')
     amount = models.IntegerField(default=1)
     is_purchase = models.BooleanField(default=False)
+
+    @staticmethod
+    def add(profile, product):
+        """ Basket에 새로운 상품을 추가하는 함수 """
+        if profile.basket.filter(id=product.id).exists():
+            raise RelationAlreadyExistException()
+        profile.basket.add(product)
+
+    @staticmethod
+    def remove(profile, product):
+        """ Basket에 있는 상품을 제거하는 함수 """
+        if not profile.basket.filter(id=product.id).exists():
+            raise RelationDoesNotExistException()
+        profile.basket.remove(product)
+
+    def purchase(self, amount: int):
+        """ Basket에 담긴 상품을 구매하는 함수 """
+        self.amount = amount
+        self.is_purchase = True
+        self.save()
 
 
 class Notify(BaseModel):

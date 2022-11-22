@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import os
-import requests
 
+import requests
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.images import ImageFile
@@ -65,7 +65,6 @@ def naver_get_access_token(url, code):
     if not response.ok:
         raise ValidationError('naver_code is invalid')
 
-    print(response.text)
     access_token = response.json().get('access_token')
 
     return access_token
@@ -108,7 +107,7 @@ def google_get_access_token(url, code):
     return access_token
 
 
-def google_get_user_info(access_token):
+def google_get_user_info(access_token) -> dict:
     user_info_response = requests.get(
         "https://www.googleapis.com/oauth2/v3/userinfo",
         params={

@@ -1,111 +1,79 @@
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.generics import ListAPIView, get_object_or_404
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView, ListCreateAPIView, UpdateAPIView, get_object_or_404
 
-from accounts.models import Profile, Address, Notify, Basket, WishList
+from accounts.models import Profile, Notify, Basket, WishList
 from accounts.serializers import (
-    AddressSerializer, ProfileSerializer, ProfilePointSerializer,
-    NotifySerializer, BasketSerializer, WishListSerializer, FollowingProfileSerializer
+    ProfileSerializer, ProfilePointSerializer,
+    NotifySerializer, BasketSerializer, WishListSerializer
 )
 from communities.models import Post
 from communities.serializers import PostSimpleSerializer
-from core.exceptions.common import KeyDoesNotExistException, ProfileNotMatchException
+from core.exceptions.common import KeyDoesNotExistException
 from core.exceptions.product import RelationAlreadyExistException, RelationDoesNotExistException
 from core.permissions import IsAuthor
+from core.views import BranduBaseViewSet
 from orders.models import Order
 from orders.serializers import OrderSerializer
 from products.models import Review, Product
 from products.serializers import ReviewSerializer
 
 
-class ProfileAPIView(APIView):
-    """
-    사용자 프로필 정보 조회 API
-    ---
-    """
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        profile = Profile.get_profile_or_exception(self.request.user.profile.id)
-        serializer = ProfileSerializer(profile)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class ProfileFollowAPIView(APIView):
-    """
-    사용자 팔로우 · 언팔로우 API
-    ---
-    """
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'profile_id': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
-        }
-    ))
-    def post(self, request, *args, **kwargs):
-        profile_id = self.request.data['profile_id']
-        profile = Profile.objects.get(user=self.request.user.id)
-        profile.follow(Profile.get_profile_or_exception(profile_id))
-        return Response(status=status.HTTP_201_CREATED)
-
-    @swagger_auto_schema(request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'profile_id': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
-        }
-    ))
-    def delete(self, request, *args, **kwargs):
-        profile_id = self.request.data['profile_id']
-        profile = Profile.objects.get(user=self.request.user.id)
-        profile.unfollow(Profile.get_profile_or_exception(profile_id))
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class ProfileFollowListAPIView(APIView):
-    def get(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise KeyDoesNotExistException()
-        profile = Profile.get_profile_or_exception(pk)
-        follower_serializer = FollowingProfileSerializer(profile.following.all(), many=True)
-        following_serializer = FollowingProfileSerializer(profile.following.all(), many=True)
-        return Response({
-            'follower': follower_serializer.data,
-            'following': following_serializer.data,
-        }, status=status.HTTP_200_OK)
-
-
-class ProfileEditAPIView(UpdateAPIView):
-    parser_classes = [MultiPartParser]
-
-    """
-    사용자 프로필 정보 수정 API
-    ---
-    """
+class BranduProfileViewSet(BranduBaseViewSet):
+    queryset = Profile.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = ProfileSerializer
 
-    def get_object(self) -> Profile:
-        return Profile.get_profile_or_exception(self.request.user.profile.id)
+    def get_permissions(self) -> list:
+        permission_classes = self.permission_classes
+        if self.action == 'retrieve':
+            permission_classes = [AllowAny]
+        if self.action == 'update' or self.action == 'partial_update' or self.action == 'destroy':
+            permission_classes = [*permission_classes, IsAuthor]
+        return [permission() for permission in permission_classes]
 
+    @action(detail=False, methods=['PATCH'])
+    def edit(self, request, *args, **kwargs):
+        try:
+            profile = self.profile
+            serializer = ProfileSerializer(profile, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Profile.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-class ProfilePointAPIView(APIView):
-    """
-    사용자 포인트 조회 API
-    ---
-    """
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        profile = Profile.get_profile_or_exception(self.request.user.profile.id)
-        serializer = ProfilePointSerializer(profile)
+    @action(detail=False, methods=['GET'])
+    def me(self, request, *args, **kwargs):
+        serializer = self.serializer_class(self.profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['GET'])
+    def point(self, request, *args, **kwargs):
+        serializer = ProfilePointSerializer(self.profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['GET'])
+    def summary(self, request, *args, **kwargs):
+        self.profile.order_set.filter(status='paid').count()
+
+
+class BranduReviewViewSet(BranduBaseViewSet):
+    queryset = Review.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = ReviewSerializer
+
+    def list(self, request, *args, **kwargs):
+        print(self.request)
+        return super(BranduReviewViewSet, self).list(request, *args, **kwargs)
+
+    def perform_destroy(self, instance: Review) -> None:
+        instance.is_deleted = True
+        instance.save()
 
 
 class ProfileSummaryAPIView(APIView):
@@ -113,6 +81,7 @@ class ProfileSummaryAPIView(APIView):
     사용자 요약 정보 (포인트, 찜한 상품 갯수 등등...)
     ---
     """
+
     def get(self, request, *args, **kwargs):
         profile = Profile.get_profile_or_exception(self.request.user.profile.id)
         orders = profile.order_set
@@ -132,111 +101,6 @@ class ProfileSummaryAPIView(APIView):
                 'confirm': len([order for order in orders.all() if order.status == 'confirm'])
             }
         }, status=status.HTTP_200_OK)
-
-
-class AddressListAPIView(ListCreateAPIView):
-    """
-    사용자 배송지 정보 관련 조회 및 생성 API
-    ---
-    """
-    queryset = Address.objects.all()
-    permission_classes = [IsAuthenticated]
-    serializer_class = AddressSerializer
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
-
-    def get_queryset(self):
-        return self.queryset.filter(profile=self.request.user.profile.id).order_by('-is_main', 'created')
-
-
-class AddressEditAPIView(APIView):
-    """
-    사용자 배송지 수정 및 삭제 API
-    ---
-    """
-    permission_classes = [IsAuthor]
-
-    def get_object(self, pk):
-        address = Address.objects.get(pk=pk)
-        self.check_object_permissions(self.request, address)
-        return address
-
-    @swagger_auto_schema(request_body=AddressSerializer)
-    def patch(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise KeyDoesNotExistException()
-        address = self.get_object(pk)
-        serializer = AddressSerializer(address, data=self.request.data, context={'request': request}, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise KeyDoesNotExistException()
-        address = self.get_object(pk)
-        address.delete()
-        return Response(status=status.HTTP_200_OK)
-
-
-class SetMainAddressAPIView(APIView):
-    """
-    기본 배송지 설정 API
-    """
-    def patch(self, request, pk=None, *args, **kwargs):
-        profile = Profile.get_profile_or_exception(self.request.user.profile.id)
-        if pk is None:
-            raise KeyDoesNotExistException()
-        address = Address.objects.get(pk=pk)
-
-        if address.profile != profile:
-            raise ProfileNotMatchException()
-
-        address.set_main()
-        return Response(status=status.HTTP_201_CREATED)
-
-
-class ReviewAPIView(APIView):
-    """
-    사용자 리뷰 수정 및 삭제 API
-    ---
-    """
-    permission_classes = [IsAuthor]
-
-    def get_object(self, pk):
-        review = Review.objects.get(pk=pk)
-        self.check_object_permissions(self.request, review)
-        return review
-
-    def get(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise KeyDoesNotExistException()
-        review = self.get_object(pk)
-        serializer = ReviewSerializer(review)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(request_body=ReviewSerializer)
-    def put(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise KeyDoesNotExistException()
-        review = self.get_object(pk)
-        serializer = ReviewSerializer(review, data=self.request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise KeyDoesNotExistException()
-        review = self.get_object(pk)
-        review.is_deleted = True
-        review.save()
-        return Response(status=status.HTTP_200_OK)
 
 
 class NotifyAPIView(APIView):
@@ -260,20 +124,6 @@ class NotifyAPIView(APIView):
             serializer.save()
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ReviewListAPIView(ListAPIView):
-    """
-    사용자 작성 리뷰 리스트 조회 API
-    ---
-    """
-    queryset = Review.objects.all()
-    serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
-        return self.queryset.filter(profile=profile).order_by('created')
 
 
 class WishListAPIView(APIView):
@@ -313,11 +163,6 @@ class WishListListAPIView(ListAPIView):
         profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         return self.queryset.filter(profile=profile)
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
-
 
 class BasketAPIView(APIView):
     """
@@ -347,15 +192,6 @@ class BasketAPIView(APIView):
         raise RelationDoesNotExistException()
 
 
-class BasketPurchaseAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(request_body=BasketSerializer(many=True))
-    def patch(self, request, *args, **kwargs):
-
-        return Response(status=status.HTTP_200_OK)
-
-
 class BasketListAPIView(ListAPIView):
     """
     장바구니 리스트 조회 API
@@ -371,11 +207,12 @@ class BasketListAPIView(ListAPIView):
 
 
 class BasketPurchaseUpdateAPIView(APIView):
-    @swagger_auto_schema(request_body=BasketSerializer)
+    @swagger_auto_schema(request_body=BasketSerializer(many=True))
     def patch(self, request, *args, **kwargs):
         product_ids = [instance['product_id'] for instance in self.request.data]
+        profile = Profile.get_profile_or_exception(profile_id=self.request.user.profile.id)
         for idx, product_id in enumerate(product_ids):
-            basket = Basket.objects.get(product_id=product_id)
+            basket = Basket.objects.get(product_id=product_id, profile=profile)
             basket.amount = self.request.data[idx]['amount']
             basket.is_purchase = self.request.data[idx]['is_purchase']
             basket.save()

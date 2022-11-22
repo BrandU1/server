@@ -34,10 +34,10 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('swagger<str:format>', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('api/v1/', include('server.api')),
+    path('v1/docs<str:format>', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('v1/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('v1/', include('server.api')),
 ]
 
 if settings.DEBUG:
