@@ -1,6 +1,6 @@
 from django.urls import path
 
-from services.views import NoticeListAPIView, InquiryListCreateAPIView, InquiryUpdateAPIView, ServicesListAPIView, FAQListAPIView, MainInfoListAPIVIew
+from services.views import NoticeListAPIView, InquiryListCreateAPIView, InquiryRetrieveUpdateDestroyAPIView, ServicesListAPIView, FAQListAPIView, MainInfoListAPIVIew
 
 urlpatterns = [
     path('', ServicesListAPIView.as_view()),
@@ -8,5 +8,5 @@ urlpatterns = [
     path('main-info/', MainInfoListAPIVIew.as_view()),
     path('faq/', FAQListAPIView.as_view()),
     path('inquiry/', InquiryListCreateAPIView.as_view()),
-    path('inquiry/<int:pk>/', InquiryUpdateAPIView.as_view()),
+    path('inquiry/<int:pk>/', InquiryRetrieveUpdateDestroyAPIView.as_view()),
 ]

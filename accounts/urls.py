@@ -1,33 +1,26 @@
-from django.urls import path
+from rest_framework.routers import DefaultRouter
 
 from accounts.views import (
-    ProfileFollowAPIView, ProfileEditAPIView, ProfileAPIView, SetMainAddressAPIView,
-    AddressListAPIView, AddressEditAPIView, ReviewListAPIView, ReviewAPIView, ProfilePointAPIView, NotifyAPIView,
-    WishListAPIView, WishListListAPIView, BasketListAPIView, BasketAPIView, PostScrappedListAPIView,
-    PostScrappedCreateAPIView, ProfileFollowListAPIView, ProfileSummaryAPIView, BasketPurchaseUpdateAPIView,
-    PurchaseListAPIView, OrderListAPIView
+    BranduProfileViewSet
+)
+from accounts.viewsets import (
+    BranduAddressViewSet, BranduReviewViewSet, BranduWishListViewSet, BranduBasketViewSet
 )
 
-urlpatterns = [
-    path('me/', ProfileAPIView.as_view()),
-    path('notify/', NotifyAPIView.as_view()),
-    path('edit/', ProfileEditAPIView.as_view()),
-    path('point/', ProfilePointAPIView.as_view()),
-    path('summary/', ProfileSummaryAPIView.as_view()),
-    path('follow/', ProfileFollowAPIView.as_view()),
-    path('addresses/', AddressListAPIView.as_view()),
-    path('address/<int:pk>/', AddressEditAPIView.as_view()),
-    path('address/<int:pk>/main/', SetMainAddressAPIView.as_view()),
-    path('review/', ReviewListAPIView.as_view()),
-    path('review/<int:pk>/', ReviewAPIView.as_view()),
-    path('wishes/', WishListListAPIView.as_view()),
-    path('wish/<int:pk>/', WishListAPIView.as_view()),
-    path('scrapped/', PostScrappedListAPIView.as_view()),
-    path('scrap/<int:pk>/', PostScrappedCreateAPIView.as_view()),
-    path('baskets/', BasketListAPIView.as_view()),
-    path('baskets/purchase/', BasketPurchaseUpdateAPIView.as_view()),
-    path('purchase/', PurchaseListAPIView.as_view()),
-    path('basket/<int:pk>/', BasketAPIView.as_view()),
-    path('<int:pk>/follows/', ProfileFollowListAPIView.as_view()),
-    path('orders/', OrderListAPIView.as_view())
-]
+router = DefaultRouter(trailing_slash=False)
+router.register('', BranduProfileViewSet, basename='profile')
+router.register('addresses', BranduAddressViewSet, basename='address')
+router.register('reviews', BranduReviewViewSet, basename='review')
+router.register('wishes', BranduWishListViewSet, basename='wish')
+router.register('baskets', BranduBasketViewSet, basename='basket')
+
+urlpatterns = router.urls
+# [
+# path('', include(router.urls)),
+# path('notify/', NotifyAPIView.as_view()),
+# path('summary/', ProfileSummaryAPIView.as_view()),
+# path('scrapped/', PostScrappedListAPIView.as_view()),
+# path('scrap/<int:pk>/', PostScrappedCreateAPIView.as_view()),
+# path('<int:pk>/follows/', ProfileFollowListAPIView.as_view()),
+# path('orders/', OrderListAPIView.as_view())
+# ]

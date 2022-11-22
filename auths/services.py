@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import os
-import requests
 
+import requests
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.files.images import ImageFile
 
 from accounts.models import User, Platform, Profile
 
@@ -64,7 +65,6 @@ def naver_get_access_token(url, code):
     if not response.ok:
         raise ValidationError('naver_code is invalid')
 
-    print(response.text)
     access_token = response.json().get('access_token')
 
     return access_token
@@ -107,7 +107,7 @@ def google_get_access_token(url, code):
     return access_token
 
 
-def google_get_user_info(access_token):
+def google_get_user_info(access_token) -> dict:
     user_info_response = requests.get(
         "https://www.googleapis.com/oauth2/v3/userinfo",
         params={
@@ -133,11 +133,21 @@ def user_create(email: str, nickname: str | None, profile_image: str | None, pla
     if created:
         user.set_password(platform + platform_id)
         Platform.objects.create(user=user, platform=platform, platform_id=platform_id)
-        Profile.objects.create(
+        profile = Profile.objects.create(
             user=user,
-            profile_image=profile_image,
             nickname=nickname if nickname is not None else ''
         )
+        if profile_image:
+            image = ImageFile(open(f'temp/{platform + platform_id}_image.jpg', 'wb'))
+            response = requests.get(profile_image)
+            image.write(response.content)
+            profile.profile_image.save(
+                os.path.basename(f'{platform + platform_id}_image.jpg'),
+                ImageFile(open(f'temp/{platform + platform_id}_image.jpg', 'rb'))
+            )
+            profile.save()
+            os.remove(f'temp/{platform + platform_id}_image.jpg')
+
     else:
         if Platform.objects.filter(platform=platform, platform_id=platform_id).first():
             return user

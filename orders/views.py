@@ -11,6 +11,8 @@ from rest_framework.views import APIView
 from django.utils import timezone
 
 import base64
+
+from core.exceptions.common import KeyDoesNotExistException
 from core.permissions import IsAuthor
 from orders.models import Order
 from orders.serializers import OrderCreateSerializer, OrderSerializer, PaymentSerializer, DeliverySerializer
@@ -49,7 +51,7 @@ class OrderTossConfirmAPIView(APIView):
         order_id = self.request.data['orderId']
         amount = self.request.data['amount']
         order = self.get_object(order_number=order_id)
-        if order.is_confirm:
+        if order.is_payment_confirm:
             raise Exception('이미 처리된 결제입니다.')
 
         if order.price == int(amount):
@@ -59,7 +61,7 @@ class OrderTossConfirmAPIView(APIView):
             }, data=json.dumps(self.request.data))
             if request.status_code == 200:
                 data = request.json()
-                payment = order.confirm_order(
+                payment = order.confirm_payment(
                     platform='TOSS',
                     price=int(data['totalAmount']),
                     name=data['orderName'],
@@ -75,7 +77,7 @@ class OrderTossConfirmAPIView(APIView):
 class OrderTossCancelAPIView(APIView):
     def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         order = Order.objects.get(id=pk)
         return Response()
 
@@ -91,7 +93,7 @@ class OrderAPIView(APIView):
     @swagger_auto_schema(responses={200: OrderSerializer()})
     def get(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception()
+            raise KeyDoesNotExistException()
         order = self.get_object(pk)
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -99,7 +101,7 @@ class OrderAPIView(APIView):
     @swagger_auto_schema(responses={204: ''})
     def delete(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception()
+            raise KeyDoesNotExistException()
         order = self.get_object(pk)
         order.is_deleted = True
         order.save()
@@ -116,7 +118,7 @@ class TrackingAPIView(APIView):
 
     def get(self, request, pk=None, *args, **kwargs):
         if pk is None:
-            raise Exception('')
+            raise KeyDoesNotExistException()
         order = self.get_object(pk=pk)
         delivery = order.delivery
         if delivery.courier_code is None:
@@ -127,3 +129,21 @@ class TrackingAPIView(APIView):
         serializer = DeliverySerializer(delivery)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class OrderConfirmAPIView(APIView):
+    permission_classes = [IsAuthor]
+
+    def get_object(self, pk):
+        order = Order.objects.get(pk=pk)
+        self.check_object_permissions(self.request, order)
+        return order
+
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk is None:
+            raise KeyDoesNotExistException()
+        order = self.get_object(pk=pk)
+        if order.is_confirm:
+            raise Exception('이미 구매 확정처리가 된 결제입니다.')
+        order.confirm_order()
+        serializer = OrderSerializer(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -16,9 +16,6 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.http import HttpResponsePermanentRedirect
-from django.shortcuts import redirect
-from django.template.defaulttags import url
 from django.urls import path, include
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
@@ -37,10 +34,10 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('swagger<str:format>', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('api/v1/', include('server.api')),
+    path('v1/docs<str:format>', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('v1/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('v1/', include('server.api')),
 ]
 
 if settings.DEBUG:

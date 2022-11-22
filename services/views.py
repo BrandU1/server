@@ -1,4 +1,3 @@
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -53,45 +52,29 @@ class FAQListAPIView(ListAPIView):
 
 
 class InquiryListCreateAPIView(ListCreateAPIView):
-    queryset = Inquiry.objects.all()
+    queryset = Inquiry.not_deleted.all()
     permission_classes = [IsAuthenticated]
     serializer_class = InquirySerializer
     pagination_class = XSmallResultsSetPagination
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
+    def get_parsers(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return []
+
+        return super().get_parsers()
 
     def get_queryset(self):
         profile = Profile.get_profile_or_exception(self.request.user.profile.id)
         return self.queryset.filter(profile=profile).order_by('-created')
 
 
-class InquiryUpdateAPIView(APIView):
+class InquiryRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthor]
+    queryset = Inquiry.not_deleted.all()
+    serializer_class = InquirySerializer
 
-    def get_object(self, pk):
-        inquiry = Inquiry.objects.get(pk=pk)
-        self.check_object_permissions(self.request, inquiry)
-        return inquiry
-
-    @swagger_auto_schema(request_body=InquirySerializer)
-    def patch(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise Exception('')
-        inquiry = self.get_object(pk)
-        print(self.request.data)
-        serializer = InquirySerializer(inquiry, data=self.request.data, context={'request': request}, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk=None, *args, **kwargs):
-        if pk is None:
-            raise Exception('')
-        inquiry = self.get_object(pk)
-        inquiry.is_deleted = True
-        inquiry.save()
-        return Response(status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None, *args, **kwargs):
+        instance: Inquiry = self.get_object()
+        instance.is_deleted = True
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)

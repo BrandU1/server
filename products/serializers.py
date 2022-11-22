@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from accounts.models import Profile, WishList
+from accounts.models import Profile, WishList, Basket
 from products.models import Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color
 
 
@@ -33,7 +33,7 @@ class ProductSimpleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'backdrop_image', 'name', 'price', 'is_wish']
+        fields = ['id', 'name', 'price', 'backdrop_image', 'is_wish']
 
     def get_is_wish(self, obj) -> bool:
         request = self.context.get("request", None)
@@ -62,10 +62,26 @@ class ProductSerializer(serializers.ModelSerializer):
     brand = BrandSerializer(read_only=True)
     category = SubCategorySerializer()
     options = ProductOptionSerializer(many=True)
+    is_wish = serializers.SerializerMethodField()
+    is_basket = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = '__all__'
+
+    def get_is_wish(self, obj) -> bool:
+        request = self.context.get("request", None)
+        if request is None or request.user.is_anonymous:
+            return False
+        profile = Profile.get_profile_or_exception(request.user.profile.id)
+        return WishList.objects.filter(product_id=obj.pk, profile=profile).exists()
+
+    def get_is_basket(self, obj):
+        request = self.context.get("request", None)
+        if request is None or request.user.is_anonymous:
+            return False
+        profile = Profile.get_profile_or_exception(request.user.profile.id)
+        return Basket.objects.filter(product_id=obj.pk, profile=profile).exists()
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -82,3 +98,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         profile = Profile.get_profile_or_exception(user.profile.id)
         return Review.objects.create(profile=profile, **validated_data)
+
+    def update(self, instance, validated_data):
+        instance.is_write = True
+        instance.save()
+        super().update(instance, validated_data)
+        return instance
