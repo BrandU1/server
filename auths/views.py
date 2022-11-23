@@ -1,10 +1,11 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from accounts.models import User
+from accounts.models import User, Profile
 from auths.services import (
     google_get_user_info,
     kakao_get_user_info,
@@ -72,3 +73,18 @@ class GoogleLoginAPI(APIView):
             'refresh_token': str(token),
             'access_token': str(token.access_token)
         })
+
+
+@api_view(['POST'])
+def generate_token(request):
+    user = User.objects.create_user(
+        username=request.data['username'], email=request.data['email'],
+        password=request.data['password']
+    )
+    Profile.objects.create(user=user)
+
+    token = TokenObtainPairSerializer.get_token(user)
+    return Response({
+        'refresh_token': str(token),
+        'access_token': str(token.access_token)
+    })

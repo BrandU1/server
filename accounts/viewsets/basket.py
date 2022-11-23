@@ -14,6 +14,7 @@ from products.models import Product
 
 
 class BranduBasketViewSet(BranduBaseViewSet):
+    model = Basket
     queryset = Basket.objects.all()
     serializer_class = BasketSerializer
     permission_classes = [IsAuthenticated]
@@ -43,7 +44,8 @@ class BranduBasketViewSet(BranduBaseViewSet):
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
-    def create(self, request, pk=None, *args, **kwargs):
+    @action(detail=True, methods=['POST'])
+    def add(self, request, pk=None, *args, **kwargs):
         """ 장바구니 추가 API """
         status_code = status.HTTP_201_CREATED
         is_success = True
@@ -124,11 +126,11 @@ class BranduBasketViewSet(BranduBaseViewSet):
     @purchase_list.mapping.patch
     def purchase_create(self, request, *args, **kwargs):
         """ 장바구니 구매 API """
-        status_code = status.HTTP_200_OK
+        status_code = status.HTTP_201_CREATED
         is_success = True
 
         try:
-            serializer = self.serializer_class(data=request.data, many=True)
+            serializer = BasketPurchaseSerializer(data=request.data, many=True, context={'profile': self.profile})
             serializer.is_valid(raise_exception=True)
 
             for data in serializer.validated_data:

@@ -12,11 +12,11 @@ def brandu_standard_response(is_success: bool, response: dict, status_code: int,
     payload: dict = {}
 
     if is_success:
-        payload['status'] = 'success'
+        payload['success'] = True
         payload['results'] = response
 
     else:
-        payload['status'] = 'fail'
+        payload['success'] = False
         payload['error'] = response
 
     return Response(

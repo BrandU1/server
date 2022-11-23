@@ -1,7 +1,6 @@
-from django.core.exceptions import ValidationError
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 
 from accounts.models import Address
@@ -12,6 +11,7 @@ from core.views import BranduBaseViewSet
 
 
 class BranduAddressViewSet(BranduBaseViewSet):
+    model = Address
     queryset = Address.objects.all()
     permission_classes = [IsAuthenticated, IsAuthor]
     serializer_class = AddressSerializer
@@ -28,7 +28,8 @@ class BranduAddressViewSet(BranduBaseViewSet):
         is_success = True
 
         try:
-            serializer = self.serializer_class(self.get_object())
+            address = self.get_object()
+            serializer = self.serializer_class(address)
             response = serializer.data
 
         except PermissionDenied as e:
@@ -77,7 +78,7 @@ class BranduAddressViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 400,
-                'error': str(e)
+                'detail': str(e)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)

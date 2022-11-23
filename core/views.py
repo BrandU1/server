@@ -1,4 +1,4 @@
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Model
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.viewsets import GenericViewSet
 
@@ -6,6 +6,7 @@ from accounts.models import Profile
 
 
 class BranduBaseViewSet(GenericViewSet):
+    model = Model
     login_required = False
 
     def get_authenticate_profile(self) -> Profile:
@@ -26,8 +27,8 @@ class BranduBaseViewSet(GenericViewSet):
             queryset = QuerySet()
             return queryset.none()
 
-        if hasattr(queryset, 'not_deleted'):
-            queryset = queryset.not_deleted()
+        if hasattr(self.model, 'not_deleted'):
+            queryset = self.model.not_deleted.all()
 
         if self.login_required:
             try:
@@ -52,5 +53,7 @@ class BranduBaseViewSet(GenericViewSet):
 
     def get_serializer_context(self) -> dict:
         context = super().get_serializer_context()
-        context.update({'request': self.request})
+        if self.login_required:
+            context.update({'profile': self.profile})
         return context
+

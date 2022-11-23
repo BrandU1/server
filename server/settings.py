@@ -14,8 +14,10 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+import sentry_sdk
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
+from sentry_sdk.integrations.django import DjangoIntegration
 
 load_dotenv()
 
@@ -223,7 +225,16 @@ AWS_S3_ACCESS_KEY_ID = get_env_variable('AMAZON_S3_ACCESS_KEY')
 AWS_S3_SECRET_ACCESS_KEY = get_env_variable('AMAZON_S3_SECRET')
 AWS_STORAGE_BUCKET_NAME = get_env_variable('AMAZON_S3_BUCKET')
 
+sentry_sdk.init(
+    dsn=get_env_variable('SENTRY_DSN'),
+    integrations=[
+        DjangoIntegration(),
+    ],
+    traces_sample_rate=1.0,
+    send_default_pii=True
+)
+
 if DEBUG:
     BASE_BACKEND_URL = 'http://localhost:8000'
 else:
-    BASE_BACKEND_URL = 'https://www.themealways.com'
+    BASE_BACKEND_URL = 'https://api.brandu.shop'
