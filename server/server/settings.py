@@ -39,10 +39,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = eval(os.environ.get('DEBUG'))
+DEBUG = eval(os.environ.get('DEBUG', 'True'))
 
 ALLOWED_HOSTS = [
-    'api.brandu.shop', 'themealways.com', '3.34.97.255', '127.0.0.1', 'localhost'
+    'api.brandu.shop', 'themealways.com', '3.34.97.255', '127.0.0.1', 'localhost', '192.168.0.2'
 ]
 
 # Application definition
