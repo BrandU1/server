@@ -5,6 +5,8 @@ services:
     container_name: django
     build: server
     command: gunicorn --bind 0.0.0.0:8000 server.wsgi:application
+    env_file:
+      - server/.env
     expose:
       - "8000"
 
