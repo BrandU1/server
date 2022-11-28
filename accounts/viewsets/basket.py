@@ -39,7 +39,7 @@ class BranduBasketViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 403,
-                'error': str(e)
+                'message': str(e.default_detail)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
@@ -60,7 +60,7 @@ class BranduBasketViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 403,
-                'error': str(e)
+                'message': str(e.default_detail)
             }
 
         except RelationAlreadyExistException as e:
@@ -68,7 +68,7 @@ class BranduBasketViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': e.status_code,
-                'error': str(e.default_detail)
+                'message': str(e.default_detail)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
@@ -88,7 +88,7 @@ class BranduBasketViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 403,
-                'error': str(e)
+                'message': str(e.default_detail)
             }
 
         except RelationDoesNotExistException as e:
@@ -96,7 +96,7 @@ class BranduBasketViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': e.status_code,
-                'error': str(e.default_detail)
+                'message': str(e.default_detail)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
@@ -117,7 +117,7 @@ class BranduBasketViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 403,
-                'error': str(e)
+                'message': str(e.default_detail)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
@@ -147,7 +147,7 @@ class BranduBasketViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 403,
-                'error': str(e)
+                'message': str(e.default_detail)
             }
 
         except ValidationError as e:
@@ -155,7 +155,7 @@ class BranduBasketViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': e.status_code,
-                'error': str(e.default_detail)
+                'message': str(e.default_detail)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)

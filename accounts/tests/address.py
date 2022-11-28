@@ -37,10 +37,9 @@ class BranduAddressAPITestCase(BranduBaseAPITestCase):
         response = self.client.get('/v1/accounts/addresses', HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
         self.assertEqual(response.status_code, 200)
 
-        addresses = response.json()
-        self.assertEqual(addresses['success'], True)
-        self.assertIsInstance(addresses['results'], list)
-        self.assertEqual(len(addresses['results']), 0)
+        self.assertEqual(response.data['success'], True)
+        self.assertIsInstance(response.data['results'], list)
+        self.assertEqual(len(response.data['results']), 0)
 
     # 사용자 주소 상세 조회 테스트 코드
     def test_address_retrieve_not_exists(self):
@@ -54,9 +53,8 @@ class BranduAddressAPITestCase(BranduBaseAPITestCase):
             HTTP_AUTHORIZATION=f'Bearer {self.access_token}',
         )
 
-        address = response.json()
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(address['success'], False)
+        self.assertEqual(response.data['success'], False)
 
     # 사용자 주소 데이터 생성 API
     def test_address_create(self):
@@ -67,16 +65,14 @@ class BranduAddressAPITestCase(BranduBaseAPITestCase):
         response = self.create_address()
         self.assertEqual(response.status_code, 201)
 
-        address = response.json()
-
-        self.assertEqual(address['success'], True)
-        self.assertEqual(address['results']['name'], self.address_data['name'])
-        self.assertEqual(address['results']['recipient'], self.address_data['recipient'])
-        self.assertEqual(address['results']['phone_number'], self.address_data['phone_number'])
-        self.assertEqual(address['results']['address'], self.address_data['address'])
-        self.assertEqual(address['results']['road_name_address'], self.address_data['road_name_address'])
-        self.assertEqual(address['results']['detail_address'], self.address_data['detail_address'])
-        self.assertEqual(address['results']['zip_code'], self.address_data['zip_code'])
+        self.assertEqual(response.data['success'], True)
+        self.assertEqual(response.data['results']['name'], self.address_data['name'])
+        self.assertEqual(response.data['results']['recipient'], self.address_data['recipient'])
+        self.assertEqual(response.data['results']['phone_number'], self.address_data['phone_number'])
+        self.assertEqual(response.data['results']['address'], self.address_data['address'])
+        self.assertEqual(response.data['results']['road_name_address'], self.address_data['road_name_address'])
+        self.assertEqual(response.data['results']['detail_address'], self.address_data['detail_address'])
+        self.assertEqual(response.data['results']['zip_code'], self.address_data['zip_code'])
 
     # 사용자 주소 데이터 생성 API
     def test_address_create_validation_error(self):
@@ -90,11 +86,9 @@ class BranduAddressAPITestCase(BranduBaseAPITestCase):
         response = self.create_address(address_data)
         self.assertEqual(response.status_code, 400)
 
-        address = response.json()
-
-        self.assertEqual(address['success'], False)
-        self.assertEqual(address['error']['code'], 400)
-        self.assertIn('name', address['error']['detail'])
+        self.assertEqual(response.data['success'], False)
+        self.assertEqual(response.data['error']['code'], 400)
+        self.assertIn('name', response.data['error']['message'])
 
     # 사용자 주소 데이터 수정 테스트 코드
     def test_address_update(self):
@@ -104,19 +98,17 @@ class BranduAddressAPITestCase(BranduBaseAPITestCase):
 
         response = self.create_address()
         self.assertEqual(response.status_code, 201)
-        address = response.json()
 
         # 사용자 주소 수정 요청
         response = self.client.patch(
-            f'/v1/accounts/addresses/{address["results"]["id"]}',
+            f'/v1/accounts/addresses/{response.data["results"]["id"]}',
             HTTP_AUTHORIZATION=f'Bearer {self.access_token}',
             data={'name': 'test2'},
         )
 
-        address = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(address['success'], True)
-        self.assertEqual(address['results']['name'], 'test2')
+        self.assertEqual(response.data['success'], True)
+        self.assertEqual(response.data['results']['name'], 'test2')
 
     # 사용자 주소 데이터 삭제 API
     def test_address_destroy(self):
@@ -127,11 +119,9 @@ class BranduAddressAPITestCase(BranduBaseAPITestCase):
         response = self.create_address()
         self.assertEqual(response.status_code, 201)
 
-        address = response.json()
-
         # 사용자 주소 삭제 요청
         response = self.client.delete(
-            f'/v1/accounts/addresses/{address["results"]["id"]}',
+            f'/v1/accounts/addresses/{response.data["results"]["id"]}',
             HTTP_AUTHORIZATION=f'Bearer {self.access_token}',
         )
 
@@ -141,9 +131,8 @@ class BranduAddressAPITestCase(BranduBaseAPITestCase):
         response = self.client.get('/v1/accounts/addresses', HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
         self.assertEqual(response.status_code, 200)
 
-        addresses = response.json()
-        self.assertEqual(addresses['success'], True)
-        self.assertEqual(len(addresses['results']), 0)
+        self.assertEqual(response.data['success'], True)
+        self.assertEqual(len(response.data['results']), 0)
 
     # 사용자 주소 목록 조회 테스트 코드
     def test_address_list(self):
@@ -158,9 +147,8 @@ class BranduAddressAPITestCase(BranduBaseAPITestCase):
         response = self.client.get('/v1/accounts/addresses', HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
         self.assertEqual(response.status_code, 200)
 
-        addresses = response.json()
-        self.assertEqual(addresses['success'], True)
-        self.assertEqual(len(addresses['results']), 1)
+        self.assertEqual(response.data['success'], True)
+        self.assertEqual(len(response.data['results']), 1)
 
     # 사용자 주소 상세 조회 테스트 코드
     def test_address_retrieve(self):
@@ -170,14 +158,11 @@ class BranduAddressAPITestCase(BranduBaseAPITestCase):
 
         response = self.create_address()
         self.assertEqual(response.status_code, 201)
-        address = response.json()
 
         # 인증된 요청의 경우
         response = self.client.get(
-            f'/v1/accounts/addresses/{address["results"]["id"]}',
+            f'/v1/accounts/addresses/{response.data["results"]["id"]}',
             HTTP_AUTHORIZATION=f'Bearer {self.access_token}',
         )
-
-        address = response.json()
-        self.assertEqual(address['success'], True)
-        self.assertEqual(address['results']['name'], self.address_data['name'])
+        self.assertEqual(response.data['success'], True)
+        self.assertEqual(response.data['results']['name'], self.address_data['name'])

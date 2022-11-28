@@ -37,7 +37,7 @@ class BranduAddressViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 403,
-                'error': str(e)
+                'message': str(e)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
@@ -48,7 +48,10 @@ class BranduAddressViewSet(BranduBaseViewSet):
         is_success = True
 
         try:
-            addresses = self.get_queryset()
+            addresses = self.get_queryset().values(
+                'id', 'is_main', 'name', 'recipient', 'address', 'road_name_address',
+                'detail_address', 'zip_code', 'phone_number', 'memo',
+            )
             serializer = self.serializer_class(addresses, many=True)
             response = serializer.data
 
@@ -57,7 +60,7 @@ class BranduAddressViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 403,
-                'error': str(e)
+                'message': str(e)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
@@ -78,7 +81,7 @@ class BranduAddressViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 400,
-                'detail': str(e)
+                'message': str(e)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
@@ -100,7 +103,7 @@ class BranduAddressViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 403,
-                'error': str(e)
+                'message': str(e)
             }
 
         except ValidationError as e:
@@ -108,7 +111,7 @@ class BranduAddressViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 400,
-                'error': str(e)
+                'message': str(e)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
@@ -130,7 +133,7 @@ class BranduAddressViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 403,
-                'error': str(e)
+                'message': str(e)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)

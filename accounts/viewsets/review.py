@@ -1,4 +1,6 @@
+from django.db.models import F
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 
@@ -10,6 +12,7 @@ from products.serializers import ReviewSerializer
 
 
 class BranduReviewViewSet(BranduBaseViewSet):
+    model = Review
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
@@ -27,16 +30,65 @@ class BranduReviewViewSet(BranduBaseViewSet):
         is_success = True
 
         try:
-            reviews = self.get_queryset()
+            reviews = self.get_queryset().annotate(
+                product_name=F('product__name'),
+                payment_day=F('order__created'),
+            ).values(
+                'id', 'product_name', 'payment_day', 'star', 'description'
+            )
             serializer = self.serializer_class(reviews, many=True)
             response = serializer.data
 
         except PermissionDenied as e:
-            status_code = status.HTTP_403_FORBIDDEN
+            status_code = e.status_code
             is_success = False
             response = {
-                'code': 403,
-                'error': str(e)
+                'code': e.status_code,
+                'message': str(e.default_detail)
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    # 사용자 작성 가능 리뷰 목록 조회 API
+    @action(detail=False, methods=['GET'], url_path='writable')
+    def writable_reviews(self, request, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        try:
+            self.profile.orders.prefetch_related('products')
+
+            reviews = self.get_queryset().filter(user=request.user, is_writable=True)
+            serializer = self.serializer_class(reviews, many=True)
+            response = serializer.data
+
+        except PermissionDenied as e:
+            status_code = e.status_code
+            is_success = False
+            response = {
+                'code': e.status_code,
+                'message': str(e.default_detail)
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    # 사용자 리뷰 생성 API
+    def create(self, request, *args, **kwargs):
+        status_code = status.HTTP_201_CREATED
+        is_success = True
+
+        try:
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            response = serializer.data
+
+        except ValidationError as e:
+            status_code = e.status_code
+            is_success = False
+            response = {
+                'code': e.status_code,
+                'message': str(e.default_detail)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
@@ -57,16 +109,16 @@ class BranduReviewViewSet(BranduBaseViewSet):
             status_code = status.HTTP_403_FORBIDDEN
             is_success = False
             response = {
-                'code': 403,
-                'error': str(e)
+                'code': e.status_code,
+                'message': str(e.default_detail)
             }
 
         except ValidationError as e:
-            status_code = status.HTTP_400_BAD_REQUEST
+            status_code = e.status_code
             is_success = False
             response = {
-                'code': 400,
-                'error': str(e)
+                'code': e.status_code,
+                'message': str(e.status_code)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
@@ -88,7 +140,7 @@ class BranduReviewViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': 403,
-                'error': str(e)
+                'message': str(e)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)

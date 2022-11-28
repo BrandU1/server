@@ -21,7 +21,7 @@ def generate_order_number():
 
 
 class Order(BaseModel):
-    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='orders')
     address = models.ForeignKey('accounts.Address', on_delete=models.CASCADE)
     name = models.CharField(max_length=30)
     order_number = models.CharField(max_length=20, unique=True, default=generate_order_number)
@@ -51,9 +51,6 @@ class Order(BaseModel):
     def confirm_order(self) -> None:
         self.is_confirm = True
         self.save()
-        Review.objects.bulk_create(
-            [Review(product=product.product, profile=self.profile, order=self) for product in self.products.all()]
-        )
 
     @property
     def status(self):
@@ -92,7 +89,7 @@ class Delivery(BaseModel):
             't_key': os.environ.get('SMART_TRACKER'),
             't_invoice': self.invoice_number,
         })
-        print(response.json())
+
         if response.status_code == 200:
             data = response.json()
             for courier in data['Recommend']:

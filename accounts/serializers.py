@@ -98,8 +98,6 @@ class BasketPurchaseSerializer(serializers.Serializer):
     amount = serializers.IntegerField()
 
     def validate(self, attrs):
-        print(attrs)
-        print(self.context)
         if not Product.objects.filter(pk=attrs['product']).exists():
             raise serializers.ValidationError("상품이 존재하지 않습니다.")
 

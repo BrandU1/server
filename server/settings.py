@@ -225,14 +225,15 @@ AWS_S3_ACCESS_KEY_ID = get_env_variable('AMAZON_S3_ACCESS_KEY')
 AWS_S3_SECRET_ACCESS_KEY = get_env_variable('AMAZON_S3_SECRET')
 AWS_STORAGE_BUCKET_NAME = get_env_variable('AMAZON_S3_BUCKET')
 
-sentry_sdk.init(
-    dsn=get_env_variable('SENTRY_DSN'),
-    integrations=[
-        DjangoIntegration(),
-    ],
-    traces_sample_rate=1.0,
-    send_default_pii=True
-)
+if not DEBUG:
+    sentry_sdk.init(
+        dsn=get_env_variable('SENTRY_DSN'),
+        integrations=[
+            DjangoIntegration(),
+        ],
+        traces_sample_rate=1.0,
+        send_default_pii=True
+    )
 
 if DEBUG:
     BASE_BACKEND_URL = 'http://localhost:8000'
