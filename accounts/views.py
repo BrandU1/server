@@ -68,7 +68,6 @@ class BranduReviewViewSet(BranduBaseViewSet):
     serializer_class = ReviewSerializer
 
     def list(self, request, *args, **kwargs):
-        print(self.request)
         return super(BranduReviewViewSet, self).list(request, *args, **kwargs)
 
     def perform_destroy(self, instance: Review) -> None:

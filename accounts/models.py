@@ -51,9 +51,9 @@ class Profile(BaseModel):
     def unfollow(self, profile):
         if self.id == profile.id:
             raise ProfileNotAllowException()
-        if Following.objects.filter(follower=profile, following=self).exists():
-            Following.objects.get(follower=profile, following=self).delete()
-        raise RelationDoesNotExistException()
+        if not Following.objects.filter(follower=profile, following=self).exists():
+            raise RelationDoesNotExistException()
+        Following.objects.get(follower=profile, following=self).delete()
 
     @classmethod
     def get_profile_or_exception(cls, profile_id: int):

@@ -43,7 +43,6 @@ def kakao_get_access_token(url, code):
         raise ValidationError('kakao_code is invalid')
 
     access_token = response.json().get('access_token')
-    print(response.json())
 
     return access_token
 

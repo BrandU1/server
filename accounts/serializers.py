@@ -15,9 +15,7 @@ class AddressSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data) -> Address:
-        user = self.context.get("request").user
-        profile = Profile.get_profile_or_exception(user.profile.id)
-        if not Address.objects.filter(profile=profile, is_main=True).exists():
+        if not Address.objects.filter(profile=validated_data['profile'], is_main=True).exists():
             return Address.objects.create(**validated_data, is_main=True)
         return Address.objects.create(**validated_data)
 
@@ -89,11 +87,10 @@ class WishListSerializer(serializers.ModelSerializer):
 
 class BasketSerializer(serializers.ModelSerializer):
     product = ProductSimpleSerializer(read_only=True)
-    product_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Basket
-        fields = ['product', 'product_id', 'amount', 'is_purchase']
+        fields = ['product', 'amount', 'is_purchase']
 
 
 class BasketPurchaseSerializer(serializers.Serializer):
@@ -104,9 +101,7 @@ class BasketPurchaseSerializer(serializers.Serializer):
         if not Product.objects.filter(pk=attrs['product']).exists():
             raise serializers.ValidationError("상품이 존재하지 않습니다.")
 
-        profile_id = self.context.get("request").user.profile.id
-        
-        if not Basket.objects.filter(product_id=attrs['product'], profile_id=profile_id).exists():
+        if not Basket.objects.filter(product_id=attrs['product'], profile=self.context['profile']).exists():
             raise serializers.ValidationError("장바구니에 상품이 존재하지 않습니다.")
 
         return attrs

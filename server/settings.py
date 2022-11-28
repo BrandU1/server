@@ -111,10 +111,10 @@ WSGI_APPLICATION = 'server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': get_env_variable('DATABASE_NAME'),
-        'USER': get_env_variable('DATABASE_USER'),
-        'PASSWORD': get_env_variable('DATABASE_PASSWORD'),
-        'HOST': get_env_variable('DATABASE_HOST'),
+        'NAME': get_env_variable('DATABASE_NAME' if not DEBUG else 'DEV_DATABASE_NAME'),
+        'USER': get_env_variable('DATABASE_USER' if not DEBUG else 'DEV_DATABASE_USER'),
+        'PASSWORD': get_env_variable('DATABASE_PASSWORD' if not DEBUG else 'DEV_DATABASE_PASSWORD'),
+        'HOST': get_env_variable('DATABASE_HOST' if not DEBUG else 'DEV_DATABASE_HOST'),
         'PORT': '5432',
     }
 }
@@ -223,7 +223,20 @@ AWS_S3_ACCESS_KEY_ID = get_env_variable('AMAZON_S3_ACCESS_KEY')
 AWS_S3_SECRET_ACCESS_KEY = get_env_variable('AMAZON_S3_SECRET')
 AWS_STORAGE_BUCKET_NAME = get_env_variable('AMAZON_S3_BUCKET')
 
+if not DEBUG:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=get_env_variable('SENTRY_DSN'),
+        integrations=[
+            DjangoIntegration(),
+        ],
+        traces_sample_rate=1.0,
+        send_default_pii=True
+    )
+
 if DEBUG:
     BASE_BACKEND_URL = 'http://localhost:8000'
 else:
-    BASE_BACKEND_URL = 'https://www.themealways.com'
+    BASE_BACKEND_URL = 'https://api.brandu.shop'

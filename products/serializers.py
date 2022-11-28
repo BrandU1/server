@@ -44,7 +44,6 @@ class ProductSimpleSerializer(serializers.ModelSerializer):
 
 
 class ColorSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Color
         fields = ['name', 'hashcode']
@@ -85,22 +84,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
     product_name = serializers.CharField(read_only=True)
     payment_day = serializers.CharField(read_only=True)
-    is_write = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Review
-        fields = ['id', 'product_name', 'payment_day', 'is_write',  'star', 'description']
-
-    def create(self, validated_data):
-        user = self.context.get("request").user
-        profile = Profile.get_profile_or_exception(user.profile.id)
-        return Review.objects.create(profile=profile, **validated_data)
-
-    def update(self, instance, validated_data):
-        instance.is_write = True
-        instance.save()
-        super().update(instance, validated_data)
-        return instance
+        fields = ['id', 'order', 'product_name', 'payment_day', 'star', 'description']

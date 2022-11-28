@@ -4,7 +4,7 @@ from accounts.views import (
     BranduProfileViewSet
 )
 from accounts.viewsets import (
-    BranduAddressViewSet, BranduReviewViewSet, BranduWishListViewSet, BranduBasketViewSet
+    BranduAddressViewSet, BranduReviewViewSet, BranduWishListViewSet, BranduBasketViewSet, BranduFollowViewSet
 )
 
 router = DefaultRouter(trailing_slash=False)
@@ -13,6 +13,7 @@ router.register('addresses', BranduAddressViewSet, basename='address')
 router.register('reviews', BranduReviewViewSet, basename='review')
 router.register('wishes', BranduWishListViewSet, basename='wish')
 router.register('baskets', BranduBasketViewSet, basename='basket')
+router.register('follows', BranduFollowViewSet, basename='follow')
 
 urlpatterns = router.urls
 # [
