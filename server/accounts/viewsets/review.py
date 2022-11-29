@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
+from orders.serializers import OrderProductSerializer
 from products.models import Review
 from products.serializers import ReviewSerializer
 
@@ -30,11 +31,8 @@ class BranduReviewViewSet(BranduBaseViewSet):
         is_success = True
 
         try:
-            reviews = self.get_queryset().annotate(
-                product_name=F('product__name'),
-                payment_day=F('order__created'),
-            ).values(
-                'id', 'product_name', 'payment_day', 'star', 'description'
+            reviews = self.get_queryset().values(
+                'id', 'profile', 'created', 'star', 'comment'
             )
             serializer = self.serializer_class(reviews, many=True)
             response = serializer.data
@@ -50,16 +48,22 @@ class BranduReviewViewSet(BranduBaseViewSet):
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     # 사용자 작성 가능 리뷰 목록 조회 API
-    @action(detail=False, methods=['GET'], url_path='writable')
+    @action(detail=False, methods=['GET'], url_path='writable', serializer_class=OrderProductSerializer)
     def writable_reviews(self, request, *args, **kwargs):
         status_code = status.HTTP_200_OK
         is_success = True
 
         try:
-            self.profile.orders.prefetch_related('products')
-
-            reviews = self.get_queryset().filter(user=request.user, is_writable=True)
-            serializer = self.serializer_class(reviews, many=True)
+            completed_order = self.profile.orders.prefetch_related('products').filter(is_confirm=True)
+            print(completed_order.__dict__)
+            completed_order = completed_order.products.filter(
+                review__isnull=True
+            ).aggregate(
+                created=F('order__created'),
+            ).values(
+                'id', 'order', 'product', 'count', 'created'
+            )
+            serializer = self.serializer_class(completed_order, many=True)
             response = serializer.data
 
         except PermissionDenied as e:
@@ -78,7 +82,7 @@ class BranduReviewViewSet(BranduBaseViewSet):
         is_success = True
 
         try:
-            serializer = self.serializer_class(data=request.data)
+            serializer = self.serializer_class(data=request.data, context={'profile': self.profile})
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
             response = serializer.data

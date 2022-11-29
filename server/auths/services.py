@@ -5,9 +5,8 @@ import os
 import requests
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.files.images import ImageFile
 
-from accounts.models import User, Platform, Profile
+from accounts.models import User, Profile
 
 GOOGLE_ACCESS_TOKEN_OBTAIN_URL = 'https://oauth2.googleapis.com/token'
 GOOGLE_USER_INFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'
@@ -129,26 +128,10 @@ def user_create(email: str, nickname: str | None, profile_image: str | None, pla
             'email': email,
         }
     )
-    if created:
-        user.set_password(platform + platform_id)
-        Platform.objects.create(user=user, platform=platform, platform_id=platform_id)
-        profile = Profile.objects.create(
-            user=user,
-            nickname=nickname if nickname is not None else ''
-        )
-        if profile_image:
-            image = ImageFile(open(f'temp/{platform + platform_id}_image.jpg', 'wb'))
-            response = requests.get(profile_image)
-            image.write(response.content)
-            profile.profile_image.save(
-                os.path.basename(f'{platform + platform_id}_image.jpg'),
-                ImageFile(open(f'temp/{platform + platform_id}_image.jpg', 'rb'))
-            )
-            profile.save()
-            os.remove(f'temp/{platform + platform_id}_image.jpg')
+    
+    Profile.create(
+        created=created, user=user, nickname=nickname, profile_image=profile_image, platform=platform,
+        platform_id=platform_id
+    )
 
-    else:
-        if Platform.objects.filter(platform=platform, platform_id=platform_id).first():
-            return user
-        Platform.objects.create(user=user, platform=platform, platform_id=platform_id)
     return user

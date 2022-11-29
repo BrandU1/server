@@ -1,4 +1,8 @@
+import os
+
+import requests
 from django.contrib.auth.models import AbstractUser
+from django.core.files.images import ImageFile
 from django.db import models
 from django.db.models import UniqueConstraint, Deferrable
 
@@ -40,6 +44,30 @@ class Profile(BaseModel):
     basket = models.ManyToManyField('products.Product', through='accounts.Basket',
                                     through_fields=('profile', 'product'), related_name='+')
     scrapped = models.ManyToManyField('communities.Post', related_name='+')
+
+    @classmethod
+    def create(cls, created: bool, user: User, platform: str, platform_id: str, profile_image: str | None,
+               nickname: str = '', **kwargs) -> None:
+        if not Platform.objects.filter(platform=platform, platform_id=platform_id).exists():
+            Platform.objects.create(user=user, platform=platform, platform_id=platform_id)
+
+        if created:
+
+            profile = cls.objects.create(user=user, nickname=nickname)
+            # 소셜 사이트로부터 프로필 이미지를 받아온다.
+            if profile_image:
+                image = ImageFile(open(f'{platform + platform_id}_image.jpg', 'wb'))
+                response = requests.get(profile_image)
+                image.write(response.content)
+                profile.profile_image.save(
+                    os.path.basename(f'{platform + platform_id}_image.jpg'),
+                    ImageFile(open(f'{platform + platform_id}_image.jpg', 'rb'))
+                )
+                profile.save()
+                os.remove(f'{platform + platform_id}_image.jpg')
+
+            # 알림 관련 모델 생성
+            Notify.objects.create(profile=profile)
 
     def follow(self, profile):
         if self.id == profile.id:

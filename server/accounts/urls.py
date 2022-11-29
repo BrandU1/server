@@ -1,10 +1,8 @@
 from rest_framework.routers import DefaultRouter
 
-from accounts.views import (
-    BranduProfileViewSet
-)
 from accounts.viewsets import (
-    BranduAddressViewSet, BranduReviewViewSet, BranduWishListViewSet, BranduBasketViewSet, BranduFollowViewSet
+    BranduProfileViewSet, BranduAddressViewSet, BranduReviewViewSet, BranduWishListViewSet, BranduBasketViewSet,
+    BranduFollowViewSet
 )
 
 router = DefaultRouter(trailing_slash=False)

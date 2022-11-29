@@ -1,65 +1,23 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, get_object_or_404
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import Profile, Notify, Basket, WishList
 from accounts.serializers import (
-    ProfileSerializer, ProfilePointSerializer,
     NotifySerializer, BasketSerializer, WishListSerializer
 )
 from communities.models import Post
 from communities.serializers import PostSimpleSerializer
 from core.exceptions.common import KeyDoesNotExistException
 from core.exceptions.product import RelationAlreadyExistException, RelationDoesNotExistException
-from core.permissions import IsAuthor
 from core.views import BranduBaseViewSet
 from orders.models import Order
 from orders.serializers import OrderSerializer
 from products.models import Review, Product
 from products.serializers import ReviewSerializer
-
-
-class BranduProfileViewSet(BranduBaseViewSet):
-    queryset = Profile.objects.all()
-    permission_classes = [IsAuthenticated]
-    serializer_class = ProfileSerializer
-
-    def get_permissions(self) -> list:
-        permission_classes = self.permission_classes
-        if self.action == 'retrieve':
-            permission_classes = [AllowAny]
-        if self.action == 'update' or self.action == 'partial_update' or self.action == 'destroy':
-            permission_classes = [*permission_classes, IsAuthor]
-        return [permission() for permission in permission_classes]
-
-    @action(detail=False, methods=['PATCH'])
-    def edit(self, request, *args, **kwargs):
-        try:
-            profile = self.profile
-            serializer = ProfileSerializer(profile, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Profile.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-    @action(detail=False, methods=['GET'])
-    def me(self, request, *args, **kwargs):
-        serializer = self.serializer_class(self.profile)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(detail=False, methods=['GET'])
-    def point(self, request, *args, **kwargs):
-        serializer = ProfilePointSerializer(self.profile)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(detail=False, methods=['GET'])
-    def summary(self, request, *args, **kwargs):
-        self.profile.order_set.filter(status='paid').count()
 
 
 class BranduReviewViewSet(BranduBaseViewSet):

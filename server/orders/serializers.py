@@ -1,28 +1,21 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from accounts.models import Profile, Address
-from accounts.serializers import ProfileSerializer, AddressSerializer
+from accounts.models import Profile
+from accounts.serializers import AddressSerializer
 from orders.models import Order, OrderProduct, Payment, Delivery, DeliveryTracking
-from products.serializers import ProductSerializer, ProductSimpleSerializer
 
 
 class OrderProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderProduct
-        fields = ['product', 'count', 'option', 'discount']
-
-
-class OrderProductSimpleSerializer(serializers.ModelSerializer):
-    product = ProductSimpleSerializer()
-
-    class Meta:
-        model = OrderProduct
-        fields = ['product', 'count', 'option', 'discount']
+        fields = ['id', 'order', 'product', 'count', 'created']
+        extra_kwargs = {
+            'created': {'read_only': True},
+        }
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
-    products = OrderProductSerializer(many=True)
     coupon = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
@@ -46,7 +39,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    products = OrderProductSimpleSerializer(many=True)
     address = AddressSerializer()
 
     class Meta:
