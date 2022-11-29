@@ -84,9 +84,15 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    product_name = serializers.CharField(read_only=True)
-    payment_day = serializers.CharField(read_only=True)
+    product = serializers.PrimaryKeyRelatedField(source='order_product__product', read_only=True)
+    product_name = serializers.CharField(source='order_product__product__name', read_only=True)
 
     class Meta:
         model = Review
-        fields = ['id', 'order', 'product_name', 'payment_day', 'star', 'description']
+        fields = ['id', 'profile', 'order_product', 'product', 'product_name', 'created', 'star', 'comment']
+
+    def validate_product(self, value):
+        profile: Profile = self.context.get("profile", None)
+        if not profile.orders.prefetch_related('products__product').filter(products__product=value).exists():
+            raise serializers.ValidationError("해당 상품을 구매한 내역이 없습니다.")
+        return value

@@ -6,7 +6,6 @@ import requests
 from django.db import models
 
 from core.mixins import BaseModel
-from products.models import Review
 
 
 def generate_order_number():
@@ -21,8 +20,8 @@ def generate_order_number():
 
 
 class Order(BaseModel):
-    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='orders')
-    address = models.ForeignKey('accounts.Address', on_delete=models.CASCADE)
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.SET_NULL, null=True, related_name='orders')
+    address = models.ForeignKey('accounts.Address', on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=30)
     order_number = models.CharField(max_length=20, unique=True, default=generate_order_number)
     coupon = models.ForeignKey('events.CouponHold', on_delete=models.CASCADE, null=True)
