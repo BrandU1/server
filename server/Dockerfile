@@ -8,5 +8,6 @@ RUN virtualenv .venv
 RUN . .venv/bin/activate
 
 RUN pip install -r requirements/dev.txt
+RUN python3 manage.py collectstatic --noinput
 
 EXPOSE 8000
