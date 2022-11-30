@@ -28,7 +28,7 @@ class CouponCoverage(models.Model):
 
 
 class CouponHold(BaseModel):
-    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='coupons')
     coupon = models.ForeignKey('events.Coupon', on_delete=models.CASCADE)
     is_use = models.BooleanField(default=False)
 

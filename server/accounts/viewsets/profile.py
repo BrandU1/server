@@ -60,13 +60,29 @@ class BranduProfileViewSet(BranduBaseViewSet):
         serializer = self.get_serializer(self.profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['GET'])
-    def summary(self, request, *args, **kwargs):
+    @action(detail=False, methods=['GET'], url_path='summary/order')
+    def summary_order(self, request, *args, **kwargs):
         status_code = status.HTTP_200_OK
         is_success = True
-        summaries = self.profile.orders.values('order_status').annotate(dcount=Count('order_status'))
-
+        summaries = self.profile.orders.values('order_status').annotate(count=Count('order_status'))
         response = summaries
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(detail=False, methods=['GET'], url_path='summary/profile')
+    def summary_profile(self, request, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+        summaries = self.profile.objects.annotate(
+            wish_count=Count('wish'),
+            basket_count=Count('basket'),
+            scrap_count=Count('scraps'),
+            coupon_count=Count('coupons'),
+        ).values(
+            'wish_count', 'basket_count', 'scrap_count', 'coupon_count', 'point'
+        )
+        response = summaries
+
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     @action(detail=False, methods=['GET'], serializer_class=NotifySerializer)

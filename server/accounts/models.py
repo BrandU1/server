@@ -39,11 +39,11 @@ class Profile(BaseModel):
     social_link = models.CharField(max_length=30, null=True)
     description = models.TextField(null=True)
     point = models.IntegerField(default=0)
-    wish = models.ManyToManyField('products.Product', through='accounts.WishList',
-                                  through_fields=('profile', 'product'), related_name='+')
-    basket = models.ManyToManyField('products.Product', through='accounts.Basket',
+    wishes = models.ManyToManyField('products.Product', through='accounts.WishList',
                                     through_fields=('profile', 'product'), related_name='+')
-    scrapped = models.ManyToManyField('communities.Post', related_name='+')
+    baskets = models.ManyToManyField('products.Product', through='accounts.Basket',
+                                     through_fields=('profile', 'product'), related_name='+')
+    scraps = models.ManyToManyField('communities.Post', related_name='+')
 
     @classmethod
     def create(cls, created: bool, user: User, platform: str, platform_id: str, profile_image: str | None,
@@ -88,14 +88,6 @@ class Profile(BaseModel):
         if cls.objects.filter(id=profile_id).exists():
             return cls.objects.get(id=profile_id)
         raise ProfileNotExistException()
-
-    @property
-    def favorites(self):
-        return self.wish.all()
-
-    @property
-    def buckets(self):
-        return self.basket.all()
 
 
 class Address(BaseModel):

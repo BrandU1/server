@@ -231,15 +231,10 @@ DEBUG_TOOLBAR_CONFIG = {
 
 if DEBUG:
     BASE_BACKEND_URL = 'http://localhost:8000'
-    import socket
 
     # static files
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-    # DEBUG TOOLBAR
-    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1', '10.0.2.2']
 
 else:
     BASE_BACKEND_URL = 'https://api.brandu.shop'
