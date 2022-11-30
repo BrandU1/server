@@ -64,7 +64,6 @@ class BranduReviewViewSet(BranduBaseViewSet):
             ).values(
                 'id', 'order_product_id', 'product', 'count', 'created'
             )
-            print(writable_orders)
             serializer = self.serializer_class(writable_orders, many=True)
             response = serializer.data
 
