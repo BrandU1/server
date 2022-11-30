@@ -4,8 +4,9 @@ services:
   django:
     container_name: django
     build: server
-    command: gunicorn --bind 0.0.0.0:8000 server.wsgi:application
+    command: gunicorn --bind 0.0.0.0:8000 --access-logfile /log/access.log --error-logfile /log/error.log server.wsgi:application
     volumes:
+      - log:/log
       - media:/media
       - static:/static
     env_file:
@@ -27,3 +28,4 @@ services:
 volumes:
   media:
   static:
+  log:

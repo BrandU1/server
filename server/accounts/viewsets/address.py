@@ -1,3 +1,4 @@
+from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -139,6 +140,7 @@ class BranduAddressViewSet(BranduBaseViewSet):
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     # 사용자 기본 배송지 설정 API
+    @swagger_auto_schema(request_body=no_body)
     @action(detail=True, methods=['POST'], description='사용자 기본 배송지 설정')
     def main(self, request, pk=None, *args, **kwargs):
         status_code = status.HTTP_200_OK

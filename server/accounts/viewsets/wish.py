@@ -85,6 +85,9 @@ class BranduWishListViewSet(BranduBaseViewSet):
         try:
             product = self.get_product(pk=pk)
             WishList.remove(profile=self.profile, product=product)
+            response = {
+                'message': '위시 리스트에서 삭제되었습니다.'
+            }
 
         except PermissionDenied as e:
             status_code = status.HTTP_403_FORBIDDEN

@@ -28,6 +28,7 @@ class Order(BaseModel):
     used_point = models.IntegerField(default=0)
     price = models.IntegerField()
     method = models.CharField(max_length=20)
+    order_status = models.CharField(max_length=20, default='결제 대기')
     is_payment_confirm = models.BooleanField(default=False)
     is_confirm = models.BooleanField(default=False)
 

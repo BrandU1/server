@@ -1,10 +1,11 @@
+from django.db.models import Count
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-from accounts.models import Profile
+from accounts.models import Profile, Notify
 from accounts.serializers import ProfileSerializer, ProfilePointSerializer, NotifySerializer
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
@@ -28,14 +29,23 @@ class BranduProfileViewSet(BranduBaseViewSet):
 
     @action(detail=False, methods=['PATCH'])
     def edit(self, request, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
         try:
             serializer = self.get_serializer(self.profile, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            response = serializer.data
 
-        except Profile.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Profile.DoesNotExist as e:
+            status_code = e.status_code
+            is_success = False
+            response = {
+                'code': e.status_code,
+                'message': e.default_detail
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     @action(detail=False, methods=['GET'])
     def me(self, request, *args, **kwargs):
@@ -54,21 +64,26 @@ class BranduProfileViewSet(BranduBaseViewSet):
     def summary(self, request, *args, **kwargs):
         status_code = status.HTTP_200_OK
         is_success = True
-        self.profile.orders.filter(status='paid').count()
-        response = {}
+        summaries = self.profile.orders.values('order_status').annotate(dcount=Count('order_status'))
+
+        response = summaries
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     @action(detail=False, methods=['GET'], serializer_class=NotifySerializer)
     def notify(self, request, *args, **kwargs):
         status_code = status.HTTP_200_OK
         is_success = True
+        notify = None
 
-        notify = self.profile.notify
-        serializer = self.get_serializer(notify)
+        try:
+            notify = self.profile.notify
 
-        response = {
-            'notify': serializer.data
-        }
+        except Notify.DoesNotExist as e:
+            notify = Notify.objects.create(profile=self.profile)
+
+        finally:
+            serializer = self.get_serializer(notify)
+            response = serializer.data
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
