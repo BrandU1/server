@@ -42,6 +42,7 @@ if settings.DEBUG:
     )
 
     urlpatterns += [path('admin/', admin.site.urls)]
+    urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += [
         path('<str:format>', schema_view.without_ui(cache_timeout=0), name='schema-json'),

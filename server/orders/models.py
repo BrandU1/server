@@ -21,10 +21,10 @@ def generate_order_number():
 
 class Order(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.SET_NULL, null=True, related_name='orders')
-    address = models.ForeignKey('accounts.Address', on_delete=models.SET_NULL, null=True)
+    address = models.ForeignKey('accounts.Address', on_delete=models.SET_NULL, blank=True, null=True)
     name = models.CharField(max_length=30)
     order_number = models.CharField(max_length=20, unique=True, default=generate_order_number)
-    coupon = models.ForeignKey('events.CouponHold', on_delete=models.CASCADE, null=True)
+    coupon = models.ForeignKey('events.CouponHold', on_delete=models.CASCADE, blank=True, null=True)
     used_point = models.IntegerField(default=0)
     price = models.IntegerField()
     method = models.CharField(max_length=20)
@@ -56,6 +56,9 @@ class Order(BaseModel):
         if self.is_confirm:
             return 'confirm'
         return self.delivery.status
+
+    def __str__(self):
+        return f'{self.name}/{self.order_number}'
 
 
 class OrderProduct(models.Model):

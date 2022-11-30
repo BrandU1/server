@@ -12,9 +12,11 @@ from core.views import BranduBaseViewSet
 
 
 class BranduProfileViewSet(BranduBaseViewSet):
+    model = Profile
     queryset = Profile.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = ProfileSerializer
+    login_required = True
 
     def get_permissions(self) -> list:
         permission_classes = self.permission_classes

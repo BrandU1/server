@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_extensions',
+    'debug_toolbar',
 
     # Django Custom Apps
     'accounts.apps.AccountsConfig',
@@ -83,6 +84,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'server.urls'
@@ -195,9 +197,14 @@ SWAGGER_SETTINGS = {
 }
 
 CORS_ORIGIN_WHITELIST = [
-    # Test 를 위한 설정
+    'http://127.0.0.1:8000'
     'http://localhost:3000',
     'https://brandu.shop',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:8000'
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -208,8 +215,6 @@ CORS_ALLOW_CREDENTIALS = True
 # CSRF_COOKIE_SECURE = True
 
 # S3 Storage
-DEFAULT_FILE_STORAGE = 'server.storages.MediaStorage'
-STATICFILES_STORAGE = 'server.storages.StaticStorage'
 MEDIAFILES_LOCATION = 'media'
 STATICFILES_LOCATION = 'static'
 
@@ -236,7 +241,15 @@ if not DEBUG:
         send_default_pii=True
     )
 
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+
 if DEBUG:
     BASE_BACKEND_URL = 'http://localhost:8000'
+
+
 else:
     BASE_BACKEND_URL = 'https://api.brandu.shop'
+    DEFAULT_FILE_STORAGE = 'server.storages.MediaStorage'
+    STATICFILES_STORAGE = 'server.storages.StaticStorage'
