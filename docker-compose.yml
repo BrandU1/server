@@ -6,8 +6,8 @@ services:
     build: server
     command: gunicorn --bind 0.0.0.0:8000 server.wsgi:application
     volumes:
-      - /var/lib/teamcity/buildAgent/work/media:server/media
-      - /var/lib/teamcity/buildAgent/work/static:server/static
+      - media:/media
+      - static:/static
     env_file:
       - server/.env
     expose:
@@ -16,7 +16,14 @@ services:
   nginx:
     container_name: nginx
     build: nginx
+    volumes:
+      - media:/media
+      - static:/static
     ports:
       - "80:80"
     depends_on:
       - django
+
+volumes:
+  media:
+  static:
