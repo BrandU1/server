@@ -159,7 +159,7 @@ class WishList(models.Model):
     @staticmethod
     def remove(profile, product):
         """ WishList에 있는 상품을 제거하는 함수 """
-        if profile.wish.filter(id=product.id).exists():
+        if not profile.wish.filter(id=product.id).exists():
             raise RelationDoesNotExistException()
         profile.wish.remove(product)
 
