@@ -14,9 +14,11 @@ from products.models import Product
 
 
 class BranduWishListViewSet(BranduBaseViewSet):
+    model = WishList
     queryset = WishList.objects.all()
     serializer_class = WishListSerializer
     permission_classes = [IsAuthenticated]
+    login_required = True
 
     @staticmethod
     def get_product(pk=None):

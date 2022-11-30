@@ -9,10 +9,7 @@ from orders.models import Order, OrderProduct, Payment, Delivery, DeliveryTracki
 class OrderProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderProduct
-        fields = ['id', 'order', 'product', 'count', 'created']
-        extra_kwargs = {
-            'created': {'read_only': True},
-        }
+        fields = ['id', 'order', 'product', 'count']
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):

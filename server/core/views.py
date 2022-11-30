@@ -53,7 +53,8 @@ class BranduBaseViewSet(GenericViewSet):
 
     def get_serializer_context(self) -> dict:
         context = super().get_serializer_context()
+        if getattr(self, 'swagger_fake_view', False):
+            return context
         if self.login_required:
             context.update({'profile': self.profile})
         return context
-
