@@ -7,9 +7,14 @@ from orders.models import Order, OrderProduct, Payment, Delivery, DeliveryTracki
 
 
 class OrderProductSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='order_product_id', read_only=True)
+    order = serializers.IntegerField(source='id', read_only=True)
+    product = serializers.IntegerField(read_only=True)
+    created = serializers.DateTimeField()
+
     class Meta:
         model = OrderProduct
-        fields = ['id', 'order', 'product', 'count']
+        fields = ['id', 'order', 'product', 'count', 'created']
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):

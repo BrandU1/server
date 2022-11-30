@@ -65,8 +65,9 @@ class OrderProduct(models.Model):
     order = models.ForeignKey('orders.Order', on_delete=models.CASCADE, related_name='products')
     product = models.ForeignKey('products.Product', on_delete=models.SET_NULL, null=True)
     count = models.IntegerField(default=1)
-    option = models.ForeignKey('products.ProductOption', on_delete=models.SET_NULL, null=True)
-    discount = models.ForeignKey('products.Discount', on_delete=models.SET_NULL, null=True)
+    option = models.ForeignKey('products.ProductOption', on_delete=models.SET_NULL, blank=True, null=True)
+    discount = models.ForeignKey('products.Discount', on_delete=models.SET_NULL, blank=True, null=True)
+    is_review_written = models.BooleanField(default=False)
 
 
 class Payment(BaseModel):

@@ -55,15 +55,17 @@ class BranduReviewViewSet(BranduBaseViewSet):
 
         try:
             completed_order = self.profile.orders.prefetch_related('products').filter(is_confirm=True)
-            print(completed_order.__dict__)
-            completed_order = completed_order.products.filter(
-                review__isnull=True
-            ).aggregate(
-                created=F('order__created'),
+            writable_orders = completed_order.filter(
+                products__is_review_written=False
+            ).annotate(
+                order_product_id=F('products__id'),
+                product=F('products__product'),
+                count=F('products__count'),
             ).values(
-                'id', 'order', 'product', 'count', 'created'
+                'id', 'order_product_id', 'product', 'count', 'created'
             )
-            serializer = self.serializer_class(completed_order, many=True)
+            print(writable_orders)
+            serializer = self.serializer_class(writable_orders, many=True)
             response = serializer.data
 
         except PermissionDenied as e:

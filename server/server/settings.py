@@ -225,6 +225,10 @@ AWS_S3_ACCESS_KEY_ID = get_env_variable('AMAZON_S3_ACCESS_KEY')
 AWS_S3_SECRET_ACCESS_KEY = get_env_variable('AMAZON_S3_SECRET')
 AWS_STORAGE_BUCKET_NAME = get_env_variable('AMAZON_S3_BUCKET')
 
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": lambda request: True,
+}
+
 if DEBUG:
     BASE_BACKEND_URL = 'http://localhost:8000'
     import socket
@@ -232,6 +236,7 @@ if DEBUG:
     # static files
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+    # DEBUG TOOLBAR
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1', '10.0.2.2']
 
