@@ -196,16 +196,13 @@ SWAGGER_SETTINGS = {
     }
 }
 
-CORS_ORIGIN_WHITELIST = [
-    'http://127.0.0.1:8000'
-    'http://localhost:3000',
-    'https://brandu.shop',
-]
+# CORS_ORIGIN_WHITELIST = [
+#     'http://127.0.0.1:8000'
+#     'http://localhost:3000',
+#     'https://brandu.shop',
+# ]
 
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:8000'
-]
+CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -228,7 +225,20 @@ AWS_S3_ACCESS_KEY_ID = get_env_variable('AMAZON_S3_ACCESS_KEY')
 AWS_S3_SECRET_ACCESS_KEY = get_env_variable('AMAZON_S3_SECRET')
 AWS_STORAGE_BUCKET_NAME = get_env_variable('AMAZON_S3_BUCKET')
 
-if not DEBUG:
+if DEBUG:
+    BASE_BACKEND_URL = 'http://localhost:8000'
+    import socket
+
+    # static files
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1', '10.0.2.2']
+
+else:
+    BASE_BACKEND_URL = 'https://api.brandu.shop'
+    DEFAULT_FILE_STORAGE = 'server.storages.MediaStorage'
+    STATICFILES_STORAGE = 'server.storages.StaticStorage'
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
@@ -240,16 +250,3 @@ if not DEBUG:
         traces_sample_rate=1.0,
         send_default_pii=True
     )
-
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
-
-if DEBUG:
-    BASE_BACKEND_URL = 'http://localhost:8000'
-
-
-else:
-    BASE_BACKEND_URL = 'https://api.brandu.shop'
-    DEFAULT_FILE_STORAGE = 'server.storages.MediaStorage'
-    STATICFILES_STORAGE = 'server.storages.StaticStorage'
