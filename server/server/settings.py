@@ -234,7 +234,8 @@ if DEBUG:
     import socket
 
     # static files
-    # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
     # DEBUG TOOLBAR
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
