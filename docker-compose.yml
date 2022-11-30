@@ -4,7 +4,7 @@ services:
   django:
     container_name: django
     build: server
-    command: gunicorn --bind 0.0.0.0:8000 --access-logfile /log/access.log --error-logfile /log/error.log server.wsgi:application
+    command: gunicorn --bind 0.0.0.0:8000 --access-logfile /home/sunsuking/logs/access.log --error-logfile /home/sunsuking/logs/error.log server.wsgi:application
     volumes:
       - log:/log
       - media:/media
