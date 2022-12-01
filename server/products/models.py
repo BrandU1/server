@@ -38,7 +38,20 @@ class Product(models.Model):
     brand = models.ForeignKey('products.Brand', on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey('products.SubCategory', on_delete=models.CASCADE)
     backdrop_image = models.ImageField(upload_to='product/%Y-%m', null=True, blank=True)
+    tags = models.ManyToManyField('products.HashTag', blank=True)
     price = models.IntegerField()
+
+
+class ProductViewCount(BaseModel):
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='view_count')
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.SET_NULL, null=True)
+
+
+class HashTag(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Discount(models.Model):

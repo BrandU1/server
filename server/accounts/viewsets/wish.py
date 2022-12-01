@@ -30,8 +30,8 @@ class BranduWishListViewSet(BranduBaseViewSet):
         is_success = True
 
         try:
-            wishlists = self.get_queryset()
-            serializer = self.serializer_class(wishlists, many=True)
+            wishes = self.get_queryset()
+            serializer = self.serializer_class(wishes, many=True)
             response = serializer.data
 
         except PermissionDenied as e:

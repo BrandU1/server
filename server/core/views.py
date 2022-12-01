@@ -55,6 +55,7 @@ class BranduBaseViewSet(GenericViewSet):
         context = super().get_serializer_context()
         if getattr(self, 'swagger_fake_view', False):
             return context
+        context.update({'request': self.request})
         if self.login_required:
             context.update({'profile': self.profile})
         return context

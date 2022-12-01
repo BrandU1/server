@@ -73,16 +73,18 @@ class BranduProfileViewSet(BranduBaseViewSet):
     def summary_profile(self, request, *args, **kwargs):
         status_code = status.HTTP_200_OK
         is_success = True
-        summaries = self.profile.objects.annotate(
-            wish_count=Count('wish'),
-            basket_count=Count('basket'),
+        summaries = Profile.objects.annotate(
+            wish_count=Count('wishes'),
+            basket_count=Count('baskets'),
             scrap_count=Count('scraps'),
             coupon_count=Count('coupons'),
+        ).filter(
+            pk=self.profile.pk
         ).values(
             'wish_count', 'basket_count', 'scrap_count', 'coupon_count', 'point'
         )
         response = summaries
-
+        
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     @action(detail=False, methods=['GET'], serializer_class=NotifySerializer)
