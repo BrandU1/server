@@ -1,9 +1,9 @@
 from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
 
 from core.exceptions.order import OrderAlreadyConfirmException
+from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
 from orders.models import Order
@@ -14,8 +14,8 @@ class BranduOrderViewSet(BranduBaseViewSet):
     model = Order
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [AllowAny]
-    login_required = False
+    permission_classes = [IsAuthor]
+    login_required = True
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         status_code = status.HTTP_200_OK

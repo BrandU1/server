@@ -21,7 +21,6 @@ from django.urls import path, include
 from rest_framework import permissions
 
 urlpatterns = [
-
     path('v1/', include('server.api')),
 ]
 
