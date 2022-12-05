@@ -5,6 +5,8 @@ from random import randint
 import requests
 from django.db import models
 
+from core.exceptions.order import OrderAlreadyConfirmException, OrderPaymentAlreadyConfirmException, \
+    OrderPaymentPriceNotEqualException, TossPaymentException
 from core.mixins import BaseModel
 
 
@@ -48,9 +50,54 @@ class Order(BaseModel):
             method=method
         )
 
+    def toss_payment_create(self, payment_key: str, order_id: str, amount: int):
+        if self.is_payment_confirm:
+            raise OrderPaymentAlreadyConfirmException()
+
+        if self.price != int(amount):
+            raise OrderPaymentPriceNotEqualException()
+
+        request = requests.post(
+            'https://api.tosspayments.com/v1/payments/confirm',
+            headers={
+                'Authorization': f'Basic {os.environ.get("TOSSPAYMENT_API_KEY")}',
+                'Content-Type': 'application/json',
+            }, data={
+                'paymentKey': payment_key,
+                'orderId': order_id,
+                'amount': amount
+            }
+        )
+
+        if request.status_code != 200:
+            error = request.json()
+            raise TossPaymentException(
+                status_code=request.status_code,
+                message=error.get('message'),
+                code=error.get('code')
+            )
+
+        data = request.json()
+        self.is_payment_confirm = True
+        delivery = Delivery.objects.create(
+            order=self,
+            invoice_number=''
+        )
+        return Payment.objects.create(
+            order=self,
+            platform='TOSS',
+            price=amount,
+            name=data.get('name', self.name),
+            payment_key=payment_key,
+            method=data.get('method', self.method),
+            recipient_url=data.get('receipt').get('url')
+        )
+
     def confirm_order(self) -> None:
+        if self.is_confirm:
+            raise OrderAlreadyConfirmException()
         self.is_confirm = True
-        self.save()
+        self.save(update_fields=['is_confirm'])
 
     @property
     def status(self):
@@ -77,6 +124,7 @@ class Payment(BaseModel):
     price = models.IntegerField()
     name = models.CharField(max_length=200)
     payment_key = models.CharField(max_length=50)
+    recipient_url = models.URLField()
     method = models.CharField(max_length=10)
 
 
