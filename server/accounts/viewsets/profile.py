@@ -78,13 +78,11 @@ class BranduProfileViewSet(BranduBaseViewSet):
             basket_count=Count('baskets'),
             scrap_count=Count('scraps'),
             coupon_count=Count('coupons'),
-        ).filter(
-            pk=self.profile.pk
         ).values(
             'wish_count', 'basket_count', 'scrap_count', 'coupon_count', 'point'
-        )
+        ).get(pk=self.profile.pk)
         response = summaries
-        
+
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     @action(detail=False, methods=['GET'], serializer_class=NotifySerializer)

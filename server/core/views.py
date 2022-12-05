@@ -1,5 +1,6 @@
 from django.db.models import QuerySet, Model
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from accounts.models import Profile
@@ -21,7 +22,7 @@ class BranduBaseViewSet(GenericViewSet):
     def profile(self) -> Profile:
         return self.get_authenticate_profile()
 
-    def create_pagination(self, queryset: QuerySet, serializer) -> dict:
+    def create_pagination(self, queryset: QuerySet, serializer) -> Response:
         paginator = SmallResultsSetPagination()
         paginated_queryset = paginator.paginate_queryset(queryset, self.request)
         serializer = serializer(paginated_queryset, many=True)

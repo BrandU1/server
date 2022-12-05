@@ -49,7 +49,7 @@ class BranduSearchViewSet(BranduBaseViewSet):
             products = Product.objects.prefetch_related('tags').filter(
                 Q(name__icontains=query) | Q(tags__name__icontains=query)
             ).distinct().order_by('id')
-            serializer = self.get_serializer(products, many=True)
+            serializer = self.create_pagination(products, self.get_serializer_class())
             response = serializer.data
 
         except PermissionDenied as e:
