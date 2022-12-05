@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from accounts.models import Profile, WishList, Basket
-from products.models import Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color
+from products.models import Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color, ProductImage, \
+    Content
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -43,6 +44,21 @@ class ProductSimpleSerializer(serializers.ModelSerializer):
         return WishList.objects.filter(product_id=obj.pk, profile=profile).exists()
 
 
+class ProductHashTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name']
+
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['kind', 'image']
+        extra_kwargs = {
+            'image': {'use_url': True},
+        }
+
+
 class ColorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Color
@@ -58,8 +74,8 @@ class ProductOptionSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    brand = BrandSerializer(read_only=True)
-    category = SubCategorySerializer()
+    tags = ProductHashTagSerializer(many=True)
+    images = ProductImageSerializer(many=True)
     options = ProductOptionSerializer(many=True)
     is_wish = serializers.SerializerMethodField()
     is_basket = serializers.SerializerMethodField()
@@ -96,3 +112,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         if not profile.orders.prefetch_related('products__product').filter(products__product=value).exists():
             raise serializers.ValidationError("해당 상품을 구매한 내역이 없습니다.")
         return value
+
+
+class ContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Content
+        fields = ['title', 'url']

@@ -1,13 +1,16 @@
 from datetime import date
 
+from django.db.models import F, Subquery
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny
 
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
-from products.models import Product, ProductViewCount
-from products.serializers import ProductSerializer
+from orders.models import OrderProduct
+from products.models import Product, ProductViewCount, Review
+from products.serializers import ProductSerializer, ReviewSerializer, ContentSerializer
 
 
 class BranduProductViewSet(BranduBaseViewSet):
@@ -16,6 +19,11 @@ class BranduProductViewSet(BranduBaseViewSet):
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
     login_required = False
+
+    def get_serializer_class(self):
+        if self.action == 'contents':
+            return ContentSerializer
+        return self.serializer_class
 
     def update_view_count(self, product) -> int:
         try:
@@ -44,6 +52,32 @@ class BranduProductViewSet(BranduBaseViewSet):
             response.update({
                 'view_count': self.update_view_count(product)
             })
+
+        except PermissionDenied as e:
+            status_code = status.HTTP_403_FORBIDDEN
+            is_success = False
+            response = {
+                'code': 403,
+                'message': str(e.default_detail)
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    # 상품 작성된 리뷰 조회
+    @action(detail=True, methods=['GET'], serializer_class=ReviewSerializer)
+    def reviews(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        try:
+            reviews = Review.objects.filter(id__in=Subquery(
+                OrderProduct.objects.prefetch_related('review').filter(product_id=pk).annotate(
+                    reviews=F('review')
+                ).values_list('reviews', flat=True)
+            ))
+            serializer = self.serializer_class(reviews, many=True)
+            response = serializer.data
+
         except PermissionDenied as e:
             status_code = status.HTTP_403_FORBIDDEN
             is_success = False

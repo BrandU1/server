@@ -38,7 +38,7 @@ class Product(models.Model):
     brand = models.ForeignKey('products.Brand', on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey('products.SubCategory', on_delete=models.CASCADE)
     backdrop_image = models.ImageField(upload_to='product/%Y-%m', null=True, blank=True)
-    tags = models.ManyToManyField('products.HashTag', blank=True)
+    tags = models.ManyToManyField('products.HashTag', blank=True, related_name='products')
     price = models.IntegerField()
 
 
@@ -75,8 +75,8 @@ class Color(models.Model):
     hashcode = models.CharField(max_length=7)
 
 
-class ProductImages(models.Model):
-    product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
+class ProductImage(models.Model):
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='images')
     kind = models.CharField(max_length=10)
     image = models.ImageField(upload_to='product/images/%Y-%m')
 
@@ -86,3 +86,8 @@ class Review(BaseModel):
     order_product = models.OneToOneField('orders.OrderProduct', on_delete=models.CASCADE)
     star = models.SmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(10)])
     comment = models.TextField(null=True, blank=True)
+
+
+class Content(models.Model):
+    title = models.CharField(max_length=100)
+    url = models.URLField()

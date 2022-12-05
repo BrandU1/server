@@ -14,7 +14,7 @@ router.register('baskets', BranduBasketViewSet, basename='basket')
 router.register('follows', BranduFollowViewSet, basename='follow')
 
 urlpatterns = router.urls
-# [
+
 # path('', include(router.urls)),
 # path('notify/', NotifyAPIView.as_view()),
 # path('summary/', ProfileSummaryAPIView.as_view()),
