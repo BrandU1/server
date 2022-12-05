@@ -1,13 +1,9 @@
-from django.urls import path
+from rest_framework.routers import DefaultRouter
 
-from events.views import (
-    CouponHoldListAPIView, CouponRegisterAPIView, CarouselAdvertisementListAPIView, BannerAdvertisementListAPIView,
+from events.viewsets import BranduCouponViewSet, BranduEventViewSet
 
-)
+router = DefaultRouter(trailing_slash=False)
+router.register('', BranduEventViewSet, basename='event')
+router.register('coupons', BranduCouponViewSet, basename='coupon')
 
-urlpatterns = [
-    path('coupons/', CouponHoldListAPIView.as_view()),
-    path('coupons/register/', CouponRegisterAPIView.as_view()),
-    path('carousel/', CarouselAdvertisementListAPIView.as_view()),
-    path('banner/', BannerAdvertisementListAPIView.as_view()),
-]
+urlpatterns = router.urls
