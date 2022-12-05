@@ -31,7 +31,8 @@ class BranduServiceViewSet(BranduBaseViewSet):
             return MainInfoSerializer
         return self.serializer_class
 
-    def list(self, request, *args, **kwargs):
+    @action(detail=False, methods=['GET'])
+    def all(self, request, *args, **kwargs):
         status_code = status.HTTP_200_OK
         is_success = True
         response = {}

@@ -3,6 +3,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.viewsets import GenericViewSet
 
 from accounts.models import Profile
+from core.paginations import SmallResultsSetPagination
 
 
 class BranduBaseViewSet(GenericViewSet):
@@ -19,6 +20,12 @@ class BranduBaseViewSet(GenericViewSet):
     @property
     def profile(self) -> Profile:
         return self.get_authenticate_profile()
+
+    def create_pagination(self, queryset: QuerySet, serializer) -> dict:
+        paginator = SmallResultsSetPagination()
+        paginated_queryset = paginator.paginate_queryset(queryset, self.request)
+        serializer = serializer(paginated_queryset, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def get_queryset(self) -> QuerySet:
         queryset = self.queryset

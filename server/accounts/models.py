@@ -144,16 +144,16 @@ class WishList(models.Model):
     @staticmethod
     def add(profile, product):
         """ WishList에 새로운 상품을 추가하는 함수 """
-        if profile.wish.filter(id=product.id).exists():
+        if profile.wishes.filter(id=product.id).exists():
             raise RelationAlreadyExistException()
-        profile.wish.add(product)
+        profile.wishes.add(product)
 
     @staticmethod
     def remove(profile, product):
         """ WishList에 있는 상품을 제거하는 함수 """
-        if not profile.wish.filter(id=product.id).exists():
+        if not profile.wishes.filter(id=product.id).exists():
             raise RelationDoesNotExistException()
-        profile.wish.remove(product)
+        profile.wishes.remove(product)
 
 
 class Basket(models.Model):
