@@ -37,11 +37,10 @@ class ProductSimpleSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'price', 'backdrop_image', 'is_wish']
 
     def get_is_wish(self, obj) -> bool:
-        request = self.context.get("request", None)
-        if request is None or request.user.is_anonymous:
+        profile = self.context.get('profile', None)
+        if not profile:
             return False
-        profile = Profile.get_profile_or_exception(request.user.profile.id)
-        return WishList.objects.filter(product_id=obj.pk, profile=profile).exists()
+        return profile.wishes.filter(id=obj.pk).exists()
 
 
 class ProductHashTagSerializer(serializers.ModelSerializer):

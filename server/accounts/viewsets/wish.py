@@ -45,7 +45,7 @@ class BranduWishListViewSet(BranduBaseViewSet):
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     @swagger_auto_schema(request_body=no_body)
-    @action(methods=['POST'], detail=True, description='사용자 위시 리스트 추가')
+    @action(methods=['POST'], detail=False, url_path='(?P<pk>[0-9]+)', description='사용자 위시 리스트 추가')
     def create_with_pk(self, request, pk=None, *args, **kwargs):
         """사용자 위시 리스트 생성 API"""
         status_code = status.HTTP_201_CREATED

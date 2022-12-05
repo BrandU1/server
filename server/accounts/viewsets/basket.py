@@ -1,4 +1,4 @@
-from drf_yasg.utils import swagger_auto_schema
+from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -44,8 +44,9 @@ class BranduBasketViewSet(BranduBaseViewSet):
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
-    @action(detail=True, methods=['POST'])
-    def add(self, request, pk=None, *args, **kwargs):
+    @swagger_auto_schema(request_body=no_body)
+    @action(detail=False, methods=['POST'], url_path='(?P<pk>[0-9]+)')
+    def create_basket(self, request, pk=None, *args, **kwargs):
         """ 장바구니 추가 API """
         status_code = status.HTTP_201_CREATED
         is_success = True
@@ -53,7 +54,9 @@ class BranduBasketViewSet(BranduBaseViewSet):
         try:
             product = self.get_product(pk=pk)
             Basket.add(profile=self.profile, product=product)
-            response = {}
+            response = {
+                'message': '장바구니에 추가되었습니다.'
+            }
 
         except PermissionDenied as e:
             status_code = status.HTTP_403_FORBIDDEN
@@ -73,6 +76,7 @@ class BranduBasketViewSet(BranduBaseViewSet):
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
+    @create_basket.mapping.delete
     def destroy(self, request, pk=None, *args, **kwargs):
         """ 장바구니 삭제 API """
         status_code = status.HTTP_204_NO_CONTENT

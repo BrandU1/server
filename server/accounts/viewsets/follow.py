@@ -1,3 +1,4 @@
+from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -57,7 +58,8 @@ class BranduFollowViewSet(BranduBaseViewSet):
         }
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
-    @action(detail=True, methods=['POST'], description='팔로우 추가')
+    @swagger_auto_schema(request_body=no_body)
+    @action(detail=False, methods=['POST'], url_path='(?P<pk>[0-9]+)', description='팔로우 추가')
     def follow(self, request, pk=None, *args, **kwargs):
         status_code = status.HTTP_201_CREATED
         is_success = True

@@ -45,9 +45,12 @@ class BranduBaseViewSet(GenericViewSet):
         serializer.save(**kwargs)
 
     def perform_destroy(self, instance) -> None:
-        if hasattr(instance, 'is_deleted'):
-            instance.is_deleted = True
-            instance.save()
+        if hasattr(self.model, 'not_deleted'):
+            if isinstance(instance, QuerySet):
+                instance.update(is_deleted=True)
+            else:
+                instance.is_deleted = True
+                instance.save()
         else:
             instance.delete()
 
