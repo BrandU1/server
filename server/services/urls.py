@@ -1,12 +1,9 @@
-from django.urls import path
+from rest_framework.routers import DefaultRouter
 
-from services.views import NoticeListAPIView, InquiryListCreateAPIView, InquiryRetrieveUpdateDestroyAPIView, ServicesListAPIView, FAQListAPIView, MainInfoListAPIVIew
+from .viewsets import BranduServiceViewSet, BranduInquiryViewSet
 
-urlpatterns = [
-    path('', ServicesListAPIView.as_view()),
-    path('notice/', NoticeListAPIView.as_view()),
-    path('main-info/', MainInfoListAPIVIew.as_view()),
-    path('faq/', FAQListAPIView.as_view()),
-    path('inquiry/', InquiryListCreateAPIView.as_view()),
-    path('inquiry/<int:pk>/', InquiryRetrieveUpdateDestroyAPIView.as_view()),
-]
+router = DefaultRouter(trailing_slash=False)
+router.register('', BranduServiceViewSet, basename='service')
+router.register('inquiries', BranduInquiryViewSet, basename='inquiry')
+
+urlpatterns = router.urls
