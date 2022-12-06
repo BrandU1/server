@@ -29,7 +29,7 @@ class Inquiry(BaseModel):
 
 
 class InquiryImage(models.Model):
-    inquiry = models.ForeignKey('services.Inquiry', on_delete=models.CASCADE)
+    inquiry = models.ForeignKey('services.Inquiry', on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='inquiry/%Y/')
 
 

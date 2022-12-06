@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from services.models import Notice, MainInfo, FAQ
+from services.models import Notice, MainInfo, FAQ, Inquiry
 
 
 @admin.register(Notice)
@@ -15,4 +15,9 @@ class MainInfoAdmin(admin.ModelAdmin):
 
 @admin.register(FAQ)
 class FAQAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Inquiry)
+class InquiryAdmin(admin.ModelAdmin):
     pass

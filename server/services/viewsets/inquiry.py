@@ -21,7 +21,7 @@ class BranduInquiryViewSet(BranduBaseViewSet):
 
         try:
             inquiries = self.get_queryset()
-            serializer = self.serializer_class(inquiries, many=True)
+            serializer = self.get_serializer(inquiries, many=True)
             response = serializer.data
 
         except PermissionDenied as e:
@@ -39,7 +39,7 @@ class BranduInquiryViewSet(BranduBaseViewSet):
         is_success = True
 
         try:
-            serializer = self.serializer_class(data=request.data)
+            serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save(profile=self.profile)
             response = serializer.data
@@ -61,7 +61,7 @@ class BranduInquiryViewSet(BranduBaseViewSet):
         inquiry = self.get_object()
         serializer = self.serializer_class(inquiry)
         response = serializer.data
-        
+
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     def partial_update(self, request, pk=None, *args, **kwargs):
