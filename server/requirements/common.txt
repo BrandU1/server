@@ -7,3 +7,4 @@ djangorestframework-simplejwt==5.2.2
 python-dotenv==0.21.0
 django-storages==1.13.1
 boto3==1.26.17
+zappa==0.56.1

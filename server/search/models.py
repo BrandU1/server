@@ -1,8 +1,9 @@
-from django.db import models
-from rest_framework.exceptions import PermissionDenied, NotFound
+from typing import Optional
 
 from accounts.models import Profile
 from core.mixins import BaseModel
+from django.db import models
+from rest_framework.exceptions import PermissionDenied, NotFound
 
 
 class Search(BaseModel):
@@ -10,7 +11,7 @@ class Search(BaseModel):
     search_word = models.CharField(max_length=100)
 
     @staticmethod
-    def search_keyword(query: str | None, profile: Profile | None) -> None:
+    def search_keyword(query: Optional[str], profile: Optional[Profile]) -> None:
         if query is None:
             raise NotFound('query is None')
 

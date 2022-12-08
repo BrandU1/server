@@ -1,0 +1,18 @@
+dev:
+  django_settings: server.settings
+  profile_name: brandu.server
+  project_name: server-dev
+  runtime: python3.9
+  s3_bucket: brandu-server-dev
+  certificate_arn: arn:aws:acm:us-east-1:957376041766:certificate/0c98d069-8490-4442-a5dd-976b2d67047e
+  domain: api.brandu.shop
+
+prod:
+  django_settings: server.settings.production
+  profile_name: brandu.server
+  project_name: server
+  runtime: python3.9
+  s3_bucket: brandu-server
+  certificate_arn: arn:aws:acm:us-east-1:957376041766:certificate/0c98d069-8490-4442-a5dd-976b2d67047e
+  domain: api.brandu.shop
+  cors: true

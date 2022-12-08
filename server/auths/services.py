@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import os
+from typing import Optional
 
 import requests
+from accounts.models import User, Profile
 from django.conf import settings
 from django.core.exceptions import ValidationError
-
-from accounts.models import User, Profile
 
 GOOGLE_ACCESS_TOKEN_OBTAIN_URL = 'https://oauth2.googleapis.com/token'
 GOOGLE_USER_INFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'
@@ -121,14 +121,14 @@ def google_get_user_info(access_token) -> dict:
     return user_info
 
 
-def user_create(email: str, nickname: str | None, profile_image: str | None, platform: str, platform_id: str):
+def user_create(email: str, nickname: Optional[str], profile_image: Optional[str], platform: str, platform_id: str):
     user, created = User.objects.get_or_create(
         username=email,
         defaults={
             'email': email,
         }
     )
-    
+
     Profile.create(
         created=created, user=user, nickname=nickname, profile_image=profile_image, platform=platform,
         platform_id=platform_id

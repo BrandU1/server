@@ -1,14 +1,14 @@
 import os
+from typing import Optional
 
 import requests
+from core.exceptions.product import RelationAlreadyExistException, RelationDoesNotExistException
+from core.exceptions.profile import ProfileNotAllowException, ProfileNotExistException
+from core.mixins import BaseModel
 from django.contrib.auth.models import AbstractUser
 from django.core.files.images import ImageFile
 from django.db import models
 from django.db.models import UniqueConstraint, Deferrable
-
-from core.exceptions.product import RelationAlreadyExistException, RelationDoesNotExistException
-from core.exceptions.profile import ProfileNotAllowException, ProfileNotExistException
-from core.mixins import BaseModel
 
 
 class User(AbstractUser):
@@ -46,7 +46,7 @@ class Profile(BaseModel):
     scraps = models.ManyToManyField('communities.Post', related_name='+')
 
     @classmethod
-    def create(cls, created: bool, user: User, platform: str, platform_id: str, profile_image: str | None,
+    def create(cls, created: bool, user: User, platform: str, platform_id: str, profile_image: Optional[str],
                nickname: str = '', **kwargs) -> None:
         if not Platform.objects.filter(platform=platform, platform_id=platform_id).exists():
             Platform.objects.create(user=user, platform=platform, platform_id=platform_id)
