@@ -43,14 +43,21 @@ MEDIAFILES_LOCATION = 'media'
 STATICFILES_LOCATION = 'static'
 
 # AWS Access
-AWS_S3_SECURE_URLS = True
-AWS_S3_REGION_NAME = 'ap-northeast-2'
-AWS_S3_SIGNATURE_VERSION = 's3v4'
-AWS_S3_ADDRESSING_STYLE = 'virtual'
+# AWS_S3_SECURE_URLS = True
+
+# AWS_S3_SIGNATURE_VERSION = 's3v4'
+# AWS_S3_ADDRESSING_STYLE = 'virtual'
 
 AWS_S3_ACCESS_KEY_ID = get_env_variable('AMAZON_S3_ACCESS_KEY')
 AWS_S3_SECRET_ACCESS_KEY = get_env_variable('AMAZON_S3_SECRET')
+AWS_S3_REGION_NAME = 'ap-northeast-2'
 AWS_STORAGE_BUCKET_NAME = get_env_variable('AMAZON_S3_BUCKET')
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_QUERYSTRING_AUTH = False
+
+AWS_DEFAULT_ACL = 'public-read'
 
 BASE_BACKEND_URL = 'https://api.brandu.shop'
 DEFAULT_FILE_STORAGE = 'server.storages.MediaStorage'

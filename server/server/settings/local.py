@@ -54,14 +54,17 @@ SWAGGER_SETTINGS = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-BASE_BACKEND_URL = 'http://localhost:8000'
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": lambda request: True,
 }
+
+BASE_BACKEND_URL = 'http://localhost:8000'
+
+STATIC_URL = f'{BASE_BACKEND_URL}/static/'
+MEDIA_URL = f'{BASE_BACKEND_URL}/media/'
 
 LOGGING = {
     'version': 1,

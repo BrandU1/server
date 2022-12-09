@@ -145,6 +145,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
+    'UPLOADED_FILES_USE_URL': True
 }
 
 # SESSION_COOKIE_SECURE = True

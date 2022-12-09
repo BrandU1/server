@@ -44,7 +44,7 @@ class BranduContentBaseViewSet(BranduBaseViewSet):
                     counts=Count('view_count'),
                 ).order_by('-counts', '-id')[:10].values_list('id', flat=True)
             ))
-            serializer = self.get_serializer_class()(products, many=True)
+            serializer = self.get_serializer_class()(products, many=True, context={'request': request})
             response = serializer.data
 
         except Exception as e:

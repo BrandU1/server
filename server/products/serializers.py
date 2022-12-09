@@ -1,8 +1,10 @@
 from rest_framework import serializers
 
 from accounts.models import Profile, WishList, Basket
-from products.models import Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color, ProductImage, \
+from products.models import (
+    Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color, ProductImage,
     Content
+)
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -29,7 +31,6 @@ class MainCategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSimpleSerializer(serializers.ModelSerializer):
-    backdrop_image = serializers.ImageField(use_url=True)
     is_wish = serializers.SerializerMethodField()
 
     class Meta:
