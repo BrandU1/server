@@ -63,8 +63,7 @@ DEBUG_TOOLBAR_CONFIG = {
 
 BASE_BACKEND_URL = 'http://localhost:8000'
 
-STATIC_URL = f'{BASE_BACKEND_URL}/static/'
-MEDIA_URL = f'{BASE_BACKEND_URL}/media/'
+SECURE_SSL_REDIRECT = False
 
 LOGGING = {
     'version': 1,

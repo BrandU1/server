@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny
 
@@ -15,25 +16,13 @@ class BranduCategoryViewSet(BranduBaseViewSet):
     permission_classes = [AllowAny]
     login_required = False
 
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return SubCategorySerializer
-
-        return self.serializer_class
+    # def get_serializer_class(self):
+    #     if self.action == 'retrieve':
+    #         return SubCategorySerializer
+    #
+    #     return self.serializer_class
 
     # 전체 카테고리 목록 조회
-    def list(self, request, *args, **kwargs):
-        status_code = status.HTTP_200_OK
-        is_success = True
-
-        categories = self.get_queryset()
-        serializer = self.get_serializer_class()(categories, many=True)
-        response = serializer.data
-
-        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
-
-    def create(self, request, pk=None, *args, **kwargs):
-        return None
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         status_code = status.HTTP_200_OK

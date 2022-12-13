@@ -9,7 +9,7 @@ from products.models import Content, Product
 from products.serializers import ContentSerializer, ProductSimpleSerializer
 
 
-class BranduContentBaseViewSet(BranduBaseViewSet):
+class BranduContentViewSet(BranduBaseViewSet):
     model = Content
     queryset = Content.objects.all()
     serializer_class = ContentSerializer
@@ -20,16 +20,6 @@ class BranduContentBaseViewSet(BranduBaseViewSet):
         if self.action == 'list':
             return self.serializer_class
         return ProductSimpleSerializer
-
-    def list(self, request, *args, **kwargs):
-        status_code = status.HTTP_200_OK
-        is_success = True
-
-        contents = self.get_queryset()
-        serializer = self.get_serializer_class()(contents, many=True)
-        response = serializer.data
-
-        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     @action(detail=False, methods=['GET'], url_path='hot-deal')
     def hot_deal(self, request, *args, **kwargs):

@@ -1,3 +1,3 @@
 from .category import BranduCategoryViewSet
-from .content import BranduContentBaseViewSet
+from .content import BranduContentViewSet
 from .product import BranduProductViewSet

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Product, MainCategory, SubCategory, Brand, Review, HashTag
+from .models import Product, MainCategory, SubCategory, Brand, Review, HashTag, Content
 
 
 @admin.register(Product)
@@ -30,4 +30,9 @@ class ReviewAdmin(admin.ModelAdmin):
 
 @admin.register(HashTag)
 class HashTagAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Content)
+class ContentAdmin(admin.ModelAdmin):
     pass

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
@@ -90,4 +91,8 @@ class Review(BaseModel):
 
 class Content(models.Model):
     title = models.CharField(max_length=100)
-    url = models.URLField()
+    path = models.CharField(max_length=50)
+
+    @property
+    def url(self):
+        return f'{settings.BASE_BACKEND_URL}{self.path}'
