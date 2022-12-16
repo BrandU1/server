@@ -90,14 +90,14 @@ class ProductSerializer(serializers.ModelSerializer):
         if request is None or request.user.is_anonymous:
             return False
         profile = Profile.get_profile_or_exception(request.user.profile.id)
-        return WishList.objects.filter(product_id=obj.pk, profile=profile).exists()
+        return profile.wishes.filter(id=obj.pk).exists()
 
-    def get_is_basket(self, obj):
+    def get_is_basket(self, obj) -> bool:
         request = self.context.get("request", None)
         if request is None or request.user.is_anonymous:
             return False
         profile = Profile.get_profile_or_exception(request.user.profile.id)
-        return Basket.objects.filter(product_id=obj.pk, profile=profile).exists()
+        return profile.baskets.filter(id=obj.pk).exists()
 
 
 class ReviewSerializer(serializers.ModelSerializer):
