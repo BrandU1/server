@@ -3,7 +3,7 @@ from rest_framework import serializers
 from accounts.models import Profile, WishList, Basket
 from products.models import (
     Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color, ProductImage,
-    Content
+    Content, HashTag
 )
 
 
@@ -38,15 +38,16 @@ class ProductSimpleSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'price', 'backdrop_image', 'is_wish']
 
     def get_is_wish(self, obj) -> bool:
-        profile = self.context.get('profile', None)
-        if not profile:
+        request = self.context.get("request", None)
+        if request is None or request.user.is_anonymous:
             return False
+        profile = Profile.get_profile_or_exception(request.user.profile.id)
         return profile.wishes.filter(id=obj.pk).exists()
 
 
 class ProductHashTagSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Product
+        model = HashTag
         fields = ['id', 'name']
 
 
