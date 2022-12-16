@@ -93,18 +93,6 @@ class BasketSerializer(serializers.ModelSerializer):
         fields = ['product', 'amount', 'is_purchase']
 
 
-class BasketPurchaseSerializer(serializers.Serializer):
-    product = serializers.IntegerField()
-    amount = serializers.IntegerField()
-
-    def validate(self, attrs):
-        if not Product.objects.filter(pk=attrs['product']).exists():
-            raise serializers.ValidationError("상품이 존재하지 않습니다.")
-
-        if not Basket.objects.filter(product_id=attrs['product'], profile=self.context['profile']).exists():
-            raise serializers.ValidationError("장바구니에 상품이 존재하지 않습니다.")
-
-        return attrs
 
 
 class ProfileSimpleSerializer(serializers.ModelSerializer):

@@ -1,9 +1,11 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from accounts.models import Profile
+from accounts.models import Profile, Basket
 from accounts.serializers import AddressSerializer
 from orders.models import Order, OrderProduct, Payment, Delivery, DeliveryTracking
+from products.models import Product
+from products.serializers import ProductSimpleSerializer
 
 
 class OrderProductSerializer(serializers.ModelSerializer):
@@ -17,8 +19,22 @@ class OrderProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'order', 'product', 'count', 'created']
 
 
+class OrderProductsSerializer(serializers.Serializer):
+    product = serializers.IntegerField()
+    count = serializers.IntegerField()
+
+    def validate(self, attrs):
+        if not Product.objects.filter(pk=attrs['product']).exists():
+            raise serializers.ValidationError("상품이 존재하지 않습니다.")
+
+        if not Basket.objects.filter(product_id=attrs['product'], profile=self.context['profile']).exists():
+            raise serializers.ValidationError("장바구니에 상품이 존재하지 않습니다.")
+        return attrs
+
+
 class OrderCreateSerializer(serializers.ModelSerializer):
     coupon = serializers.IntegerField(required=False, allow_null=True)
+    products = OrderProductsSerializer(many=True)
 
     class Meta:
         model = Order
@@ -36,12 +52,15 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         profile = Profile.get_profile_or_exception(user.profile.id)
         order = Order.objects.create(profile=profile, **validated_data)
-        order.products.set([OrderProduct.objects.create(order=order, **product) for product in products])
+        order.products.set([OrderProduct.objects.create(
+            order=order, product_id=product['product'], count=product['count']
+        ) for product in products])
         return order
 
 
 class OrderSerializer(serializers.ModelSerializer):
     address = AddressSerializer()
+    products = ProductSimpleSerializer(many=True)
 
     class Meta:
         model = Order

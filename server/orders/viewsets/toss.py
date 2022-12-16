@@ -19,6 +19,7 @@ class BranduTossViewSet(BranduBaseViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthor]
+    login_required = True
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -28,7 +29,7 @@ class BranduTossViewSet(BranduBaseViewSet):
         return self.serializer_class
 
     def create(self, request, *args, **kwargs):
-        status_code = status.HTTP_200_OK
+        status_code = status.HTTP_201_CREATED
         is_success = True
 
         try:
