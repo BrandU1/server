@@ -18,5 +18,5 @@ SIMPLE_JWT = {
 
 BASE_BACKEND_URL = 'http://192.168.0.2'
 
-# STATIC_URL = f'{BASE_BACKEND_URL}/static/'
+STATIC_URL = f'{BASE_BACKEND_URL}/static/'
 MEDIA_URL = f'{BASE_BACKEND_URL}/media/'
