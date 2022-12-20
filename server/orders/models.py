@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime
 from random import randint
@@ -56,17 +57,16 @@ class Order(BaseModel):
 
         if self.price != int(amount):
             raise OrderPaymentPriceNotEqualException()
-
         request = requests.post(
             'https://api.tosspayments.com/v1/payments/confirm',
             headers={
                 'Authorization': f'Basic {os.environ.get("TOSSPAYMENT_API_KEY")}',
                 'Content-Type': 'application/json',
-            }, data={
+            }, data=json.dumps({
                 'paymentKey': payment_key,
                 'orderId': order_id,
-                'amount': amount
-            }
+                'amount': amount,
+            })
         )
 
         if request.status_code != 200:

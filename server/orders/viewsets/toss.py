@@ -69,13 +69,14 @@ class BranduTossViewSet(BranduBaseViewSet):
 
         try:
             order = get_object_or_404(Order, order_number=order_id)
-            payment = order.toss_payment_create(
+            order.toss_payment_create(
                 payment_key=payment_key,
-                amount=amount,
                 order_id=order_id,
+                amount=amount,
             )
-            serializer = self.get_serializer_class()(payment)
-            response = serializer.data
+            response = {
+                'order_id': order.id,
+            }
 
         except OrderPaymentAlreadyConfirmException as e:
             is_success = False
