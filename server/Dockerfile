@@ -7,7 +7,7 @@ RUN pip install virtualenv
 RUN virtualenv .venv
 RUN . .venv/bin/activate
 
-RUN pip install -r requirements/dev.txt
+RUN pip install -r requirements/prod.txt
 #RUN python3 manage.py collectstatic --noinput --settings=server.settings.staging
 
 EXPOSE 80
