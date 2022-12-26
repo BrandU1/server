@@ -1,12 +1,11 @@
-from __future__ import annotations
-
 import os
 from typing import Optional
 
 import requests
-from accounts.models import User, Profile
 from django.conf import settings
 from django.core.exceptions import ValidationError
+
+from accounts.models import User, Profile
 
 GOOGLE_ACCESS_TOKEN_OBTAIN_URL = 'https://oauth2.googleapis.com/token'
 GOOGLE_USER_INFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'

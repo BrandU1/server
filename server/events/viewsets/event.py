@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
@@ -12,7 +12,7 @@ class BranduEventViewSet(BranduBaseViewSet):
     model = Advertisement
     queryset = Advertisement.objects.all()
     serializer_class = AdvertisementSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     login_required = False
 
     @action(detail=False, methods=['GET'])

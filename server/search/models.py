@@ -1,9 +1,10 @@
 from typing import Optional
 
+from django.db import models
+from rest_framework.exceptions import NotFound
+
 from accounts.models import Profile
 from core.mixins import BaseModel
-from django.db import models
-from rest_framework.exceptions import PermissionDenied, NotFound
 
 
 class Search(BaseModel):
@@ -13,10 +14,10 @@ class Search(BaseModel):
     @staticmethod
     def search_keyword(query: Optional[str], profile: Optional[Profile]) -> None:
         if query is None:
-            raise NotFound('query is None')
+            raise NotFound('검색어가 없습니다.')
 
-        if profile is None:
-            raise PermissionDenied('profile is None')
+        if query == '' or query == 'undefined':
+            return
 
         search_word = Search.not_deleted.filter(profile=profile, search_word=query)
         if search_word.exists():

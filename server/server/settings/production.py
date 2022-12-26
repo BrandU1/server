@@ -5,13 +5,15 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 from .base import *
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     # For API Gateway Server
+    "localhost",
     'https://2zixy7e73k.execute-api.ap-northeast-2.amazonaws.com',
     'api.brandu.shop',
     '127.0.0.1',
+
 ]
 
 # Database
@@ -55,11 +57,12 @@ AWS_STORAGE_BUCKET_NAME = get_env_variable('AMAZON_S3_BUCKET')
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
+
+AWS_S3_SECURE_URLS = False
 AWS_QUERYSTRING_AUTH = False
+# AWS_DEFAULT_ACL = 'public-read'
 
-AWS_DEFAULT_ACL = 'public-read'
-
-BASE_BACKEND_URL = 'https://api.brandu.shop'
+# BASE_BACKEND_URL = 'https://api.brandu.shop'
 DEFAULT_FILE_STORAGE = 'server.storages.MediaStorage'
 STATICFILES_STORAGE = 'server.storages.StaticStorage'
 
@@ -74,7 +77,7 @@ sentry_sdk.init(
 
 CORS_ALLOW_CREDENTIALS = True
 
-SECURE_SSL_REDIRECT = True
+# SECURE_SSL_REDIRECT = True
 
 CORS_ORIGIN_WHITELIST = [
     # For Development Server

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounts.models import Address, Profile, Point, Notify, Platform, Basket, WishList
-from products.models import Review, Product
+from products.models import Review
 from products.serializers import ProductSimpleSerializer
 
 
@@ -93,8 +93,6 @@ class BasketSerializer(serializers.ModelSerializer):
         fields = ['product', 'amount', 'is_purchase']
 
 
-
-
 class ProfileSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
@@ -102,8 +100,8 @@ class ProfileSimpleSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    backdrop_image = serializers.ImageField(use_url=True, allow_empty_file=True)
-    profile_image = serializers.ImageField(use_url=True, allow_empty_file=True)
+    backdrop_image = serializers.ImageField(use_url=True, allow_empty_file=True, allow_null=True)
+    profile_image = serializers.ImageField(use_url=True, allow_empty_file=True, allow_null=True)
     nickname = serializers.CharField(allow_blank=True)
     name = serializers.CharField(allow_blank=True)
     phone_number = serializers.CharField(allow_blank=True)

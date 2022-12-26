@@ -1,6 +1,5 @@
 from datetime import date
 
-from django.conf import settings
 from django.db.models import F, Subquery
 from rest_framework import status
 from rest_framework.decorators import action
@@ -11,8 +10,7 @@ from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
 from orders.models import OrderProduct
 from products.models import Product, ProductViewCount, Review, MainCategory, Content
-from products.serializers import ProductSerializer, ReviewSerializer, ContentSerializer, MainCategorySerializer, \
-    SubCategorySerializer
+from products.serializers import ProductSerializer, ReviewSerializer, ContentSerializer, MainCategorySerializer
 
 
 class BranduProductViewSet(BranduBaseViewSet):
@@ -44,6 +42,7 @@ class BranduProductViewSet(BranduBaseViewSet):
 
     # 상품 디테일 조회
     def retrieve(self, request, pk=None, *args, **kwargs):
+        print(type(self.request.data))
         status_code = status.HTTP_200_OK
         is_success = True
 

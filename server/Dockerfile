@@ -10,4 +10,4 @@ RUN . .venv/bin/activate
 RUN pip install -r requirements/dev.txt
 #RUN python3 manage.py collectstatic --noinput --settings=server.settings.staging
 
-EXPOSE 8000
+EXPOSE 80

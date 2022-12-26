@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from accounts.models import Profile, WishList, Basket
+from accounts.models import Profile
 from products.models import (
     Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color, ProductImage,
     Content, HashTag
@@ -75,6 +75,7 @@ class ProductOptionSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    brand = BrandSerializer()
     tags = ProductHashTagSerializer(many=True)
     images = ProductImageSerializer(many=True)
     options = ProductOptionSerializer(many=True)

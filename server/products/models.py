@@ -42,6 +42,9 @@ class Product(models.Model):
     tags = models.ManyToManyField('products.HashTag', blank=True, related_name='products')
     price = models.IntegerField()
 
+    def __str__(self):
+        return self.name
+
 
 class ProductViewCount(BaseModel):
     product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='view_count')
