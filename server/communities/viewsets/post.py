@@ -95,18 +95,18 @@ class BranduPostViewSet(BranduBaseViewSet):
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
-    @action(detail=True, methods=['POST'], serializer_class=PostImageSerializer)
-    def images(self, request, pk=None, *args, **kwargs):
+    @action(detail=False, methods=['POST'], serializer_class=PostImageSerializer)
+    def images(self, request, *args, **kwargs):
         status_code = status.HTTP_201_CREATED
         is_success = True
 
         try:
-            post = self.get_object()
             serializer = self.serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
-            serializer.save(post=post)
+            serializer.save()
+            image = serializer.data['image']
             response = {
-                'message': '이미지가 등록되었습니다.'
+                'image': request.build_absolute_uri(image)
             }
 
         except ValidationError as e:

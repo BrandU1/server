@@ -175,3 +175,5 @@ cython_debug/
 **/.DS_Store/*
 server/media/*
 server/static/*
+
+dump.rdb

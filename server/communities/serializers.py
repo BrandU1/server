@@ -31,8 +31,4 @@ class PostSerializer(serializers.ModelSerializer):
 class PostImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostImage
-        fields = ['id', 'image', 'post']
-        read_only_fields = ['post']
-
-    def create(self, validated_data):
-        return super().create(validated_data)
+        fields = ['id', 'image']
