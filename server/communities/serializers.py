@@ -12,19 +12,11 @@ class PostSimpleSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['id', 'profile', 'title', 'backdrop_image', 'content', 'images']
-        read_only_fields = ['profile', 'images']
+        fields = ['id', 'profile', 'title', 'backdrop_image', 'content']
+        read_only_fields = ['profile']
         extra_kwargs = {
             'backdrop_image': {'required': False},
         }
-
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        ret['images'] = [
-            self.context['request'].build_absolute_uri(image.image.url)
-            for image in instance.images.all()
-        ]
-        return ret
 
 
 class PostImageSerializer(serializers.ModelSerializer):
