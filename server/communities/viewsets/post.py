@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from communities.models import Post
-from communities.serializers import PostSerializer
+from communities.serializers import PostSerializer, PostImageSerializer
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
@@ -23,7 +23,7 @@ class BranduPostViewSet(BranduBaseViewSet):
         permission_classes = self.permission_classes
         if self.action == 'create':
             permission_classes = [IsAuthenticated]
-        elif self.action in ['partial_update', 'destroy']:
+        elif self.action in ['partial_update', 'destroy', 'images']:
             permission_classes = [IsAuthor]
         return [permission() for permission in permission_classes]
 
@@ -95,17 +95,19 @@ class BranduPostViewSet(BranduBaseViewSet):
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['POST'], serializer_class=PostImageSerializer)
     def images(self, request, pk=None, *args, **kwargs):
         status_code = status.HTTP_201_CREATED
         is_success = True
 
         try:
             post = self.get_object()
-            serializer = self.serializer_class(data=request.data, many=True)
+            serializer = self.serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save(post=post)
-            response = serializer.data
+            response = {
+                'message': '이미지가 등록되었습니다.'
+            }
 
         except ValidationError as e:
             status_code = e.status_code

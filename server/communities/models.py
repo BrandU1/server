@@ -14,7 +14,7 @@ class Post(BaseModel):
 
 
 class PostImage(models.Model):
-    content = models.ForeignKey('communities.Post', on_delete=models.CASCADE, related_name='images')
+    post = models.ForeignKey('communities.Post', on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='community/%Y-%m')
 
 
