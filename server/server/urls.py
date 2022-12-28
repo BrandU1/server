@@ -23,7 +23,7 @@ urlpatterns = [
     path('v1/', include('server.api')),
 ]
 
-if settings.DEBUG:
+if settings.IS_DOCUMENTATION:
     from drf_yasg import openapi
     from drf_yasg.views import get_schema_view
 
@@ -39,11 +39,11 @@ if settings.DEBUG:
         permission_classes=[permissions.AllowAny],
     )
 
-    urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]
-    # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    # urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += [
         path('<str:format>', schema_view.without_ui(cache_timeout=0), name='schema-json'),
         path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
         path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     ]
+
+if settings.DEBUG:
+    urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]
