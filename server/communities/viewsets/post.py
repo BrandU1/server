@@ -31,19 +31,16 @@ class BranduPostViewSet(BranduBaseViewSet):
     def best(self, request, *args, **kwargs):
         status_code = status.HTTP_200_OK
         is_success = True
-        payload = {}
         cached = cache.get('best_post')
 
-        try:
-            if not cached:
-                posts = Post.objects.prefetch_related('likes').annotate(
-                    likes_count=Count('likes')
-                ).values('id', 'title', 'likes_count', 'backdrop_image')[:10]
-                cached.set('best_post', posts, 60 * 60)
-            payload = cache.get('best_post')
-
-        except Exception as e:
-            pass
+        if not cached:
+            posts = Post.objects.prefetch_related('likes').annotate(
+                likes_count=Count('likes')
+            ).values('id', 'title', 'likes_count', 'backdrop_image')[:10]
+            cache.set('best_post', posts, 60 * 60)
+            payload = posts
+        else:
+            payload = cached
 
         return brandu_standard_response(is_success=is_success, response=payload, status_code=status_code)
 
@@ -71,18 +68,9 @@ class BranduPostViewSet(BranduBaseViewSet):
         status_code = status.HTTP_200_OK
         is_success = True
 
-        try:
-            post = self.get_object()
-            serializer = self.serializer_class(post, context={'request': request})
-            response = serializer.data
-
-        except Exception as e:
-            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-            is_success = False
-            response = {
-                'code': 500,
-                'message': str(e)
-            }
+        post = self.get_object()
+        serializer = self.serializer_class(post, context={'request': request})
+        response = serializer.data
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
