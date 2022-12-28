@@ -16,7 +16,6 @@ class PostSerializer(serializers.ModelSerializer):
         read_only_fields = ['profile', 'images']
         extra_kwargs = {
             'backdrop_image': {'required': False},
-            'content': {'required': False},
         }
 
     def to_representation(self, instance):

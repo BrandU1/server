@@ -7,7 +7,7 @@ class Post(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     content = models.TextField()
-    backdrop_image = models.ImageField(upload_to='community/backdrop/%Y-%m', null=True)
+    backdrop_image = models.URLField(null=True, blank=True)
     hits = models.PositiveIntegerField(default=1)
     tags = models.ManyToManyField('communities.PostTag', blank=True, related_name='posts')
     likes = models.ManyToManyField('accounts.Profile', blank=True, related_name='post_likes')
