@@ -25,7 +25,17 @@ services:
     depends_on:
       - django
 
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --port 6379
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis:/data
+
 volumes:
   media:
   static:
   logs:
+  redis:
