@@ -47,8 +47,8 @@ class BranduBaseViewSet(GenericViewSet):
 
         return queryset
 
-    def perform_create(self, serializer, *args, **kwargs) -> None:
-        if self.login_required:
+    def perform_create(self, serializer, login_required=False, *args, **kwargs) -> None:
+        if login_required or self.login_required:
             serializer.save(profile=self.profile, **kwargs)
         serializer.save(**kwargs)
 

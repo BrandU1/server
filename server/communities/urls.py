@@ -1,4 +1,8 @@
-from django.urls import path
+from rest_framework.routers import DefaultRouter
 
-urlpatterns = [
-]
+from communities.viewsets.post import BranduPostViewSet
+
+router = DefaultRouter(trailing_slash=False)
+router.register('post', BranduPostViewSet, basename='post')
+
+urlpatterns = router.urls

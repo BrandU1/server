@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.core.cache import cache
 from django.db.models import F, Subquery
 from rest_framework import status
 from rest_framework.decorators import action
@@ -42,17 +43,20 @@ class BranduProductViewSet(BranduBaseViewSet):
 
     # 상품 디테일 조회
     def retrieve(self, request, pk=None, *args, **kwargs):
-        print(type(self.request.data))
         status_code = status.HTTP_200_OK
         is_success = True
+        payload = {}
+        cached_product = cache.get(f'product_{pk}')
 
         try:
-            product = self.get_object()
-            serializer = self.serializer_class(product)
-            response = serializer.data
-            response.update({
-                'view_count': self.update_view_count(product)
-            })
+            if not cached_product:
+                product = self.get_object()
+                serializer = self.serializer_class(product)
+                payload = serializer.data
+                payload.update({
+                    'view_count': self.update_view_count(product)
+                })
+                cache.set(f'product_{pk}', payload, 60 * 60)
 
         except PermissionDenied as e:
             status_code = status.HTTP_403_FORBIDDEN
@@ -61,6 +65,9 @@ class BranduProductViewSet(BranduBaseViewSet):
                 'code': 403,
                 'message': str(e.default_detail)
             }
+
+        finally:
+            response = cached_product if cached_product else payload
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 

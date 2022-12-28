@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     # Django Third party Apps
     'rest_framework',
     'corsheaders',
+    'django_apscheduler',
 
     # Django Custom Apps
     'accounts.apps.AccountsConfig',
@@ -152,3 +153,7 @@ REST_FRAMEWORK = {
 
 # SESSION_COOKIE_SECURE = True
 # CSRF_COOKIE_SECURE = True
+
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"  # Default
+
+SCHEDULER_DEFAULT = True

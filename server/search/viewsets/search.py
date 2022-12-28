@@ -1,4 +1,5 @@
-from django.db.models import Q
+from django.core.cache import cache
+from django.db.models import Q, Count
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -13,6 +14,18 @@ from products.models import Product
 from products.serializers import ProductSimpleSerializer
 from search.models import Search
 from search.serializers import SearchSerializer
+
+
+def search_rank() -> None:
+    search_ranks = Search.objects.values(
+        'search_word'
+    ).annotate(
+        count=Count('search_word')
+    ).order_by(
+        '-count'
+    )[:10].values('count', 'search_word')
+    cache.set('search_ranks', search_ranks, 60 * 5)
+    return search_ranks
 
 
 class BranduSearchViewSet(BranduBaseViewSet):
@@ -45,6 +58,7 @@ class BranduSearchViewSet(BranduBaseViewSet):
         query = self.request.query_params.get('query', None)
 
         try:
+            search_rank()
             try:
                 Search.search_keyword(query, self.profile)
 
@@ -138,3 +152,14 @@ class BranduSearchViewSet(BranduBaseViewSet):
             }
 
         return brandu_standard_response(status_code=status_code, is_success=is_success, response=response)
+
+    @action(detail=False, methods=['GET'])
+    def rank(self, request, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        cached = cache.get('search_ranks')
+
+        if not cached:
+            return brandu_standard_response(status_code=status_code, is_success=is_success, response=search_rank())
+        return brandu_standard_response(status_code=status_code, is_success=is_success, response=cached)

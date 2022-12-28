@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.cache import cache
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
@@ -44,6 +45,16 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(
+            self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        super().save(force_insert, force_update, using, update_fields)
+        cache.delete(f'product_{self.id}')
+
+    def delete(self, using=None, keep_parents=False):
+        cache.delete(f'product_{self.id}')
+        super().delete(using, keep_parents)
 
 
 class ProductViewCount(BaseModel):

@@ -16,6 +16,16 @@ from search.models import Search
 from search.serializers import SearchSerializer, SearchRankSerializer
 
 
+def search_rank() -> None:
+    search_ranks = Search.objects.values(
+        'search_word'
+    ).annotate(
+        count=Count('search_word')
+    ).order_by('-count')[:11]
+    print(search_ranks)
+    # cache.set('search_ranks', search_ranks, 60 * 5)
+
+
 class SearchListAPIView(ListAPIView):
     """
     검색 쿼리 조회 API
@@ -34,7 +44,6 @@ class SearchListAPIView(ListAPIView):
         query = self.request.query_params.get('query', None)
         if query is None:
             raise Exception('')
-
         if self.request.user and self.request.user.is_authenticated:
             profile = self.request.user.profile
             search_words = Search.objects.filter(profile=profile, search_word=query)
