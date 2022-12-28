@@ -23,7 +23,7 @@ urlpatterns = [
     path('v1/', include('server.api')),
 ]
 
-if settings.IS_DOCUMENTATION:
+if settings.DEBUG:
     from drf_yasg import openapi
     from drf_yasg.views import get_schema_view
 
@@ -44,6 +44,4 @@ if settings.IS_DOCUMENTATION:
         path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
         path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     ]
-
-if settings.DEBUG:
     urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]
