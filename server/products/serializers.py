@@ -1,9 +1,11 @@
+from PIL import Image
+from rembg import remove
 from rest_framework import serializers
 
 from accounts.models import Profile
 from products.models import (
     Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color, ProductImage,
-    Content, HashTag
+    Content, HashTag, CustomProduct, CustomImage
 )
 
 
@@ -120,3 +122,25 @@ class ContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Content
         fields = ['title', 'url']
+
+
+class CustomProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomProduct
+        fields = ['id', 'product', 'profile', 'image']
+        read_only_fields = ['profile']
+
+
+class CustomImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomImage
+        fields = ['id', 'profile', 'image']
+        read_only_fields = ['profile']
+
+    def create(self, validated_data):
+        image = validated_data.pop('image')
+        new_image = Image.open(image)
+        removed_image = remove(new_image)
+        instance: CustomImage = super().create(validated_data)
+        instance.image.save(image.name, removed_image)
+        return instance

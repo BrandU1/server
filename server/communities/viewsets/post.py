@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from communities.models import Post
-from communities.serializers import PostSerializer, PostImageSerializer, PostCommentSerializer
+from communities.serializers import PostSerializer, PostImageSerializer, PostCommentSerializer, PostSimpleSerializer
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
@@ -26,6 +26,16 @@ class BranduPostViewSet(BranduBaseViewSet):
         elif self.action in ['partial_update', 'destroy']:
             permission_classes = [IsAuthor]
         return [permission() for permission in permission_classes]
+
+    def list(self, request, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        posts = self.get_queryset()
+        serializer = self.create_pagination(queryset=posts, serializer=PostSimpleSerializer)
+        response = serializer.data
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     @action(detail=False, methods=['GET'])
     def best(self, request, *args, **kwargs):

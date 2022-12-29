@@ -7,6 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, NotFound
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from communities.models import Post
+from communities.serializers import PostSimpleSerializer
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
@@ -58,27 +60,7 @@ class BranduSearchViewSet(BranduBaseViewSet):
         query = self.request.query_params.get('query', None)
 
         try:
-            search_rank()
-            try:
-                Search.search_keyword(query, self.profile)
-
-            except PermissionDenied as e:
-                pass
-
-            finally:
-                if query:
-                    products = Product.objects.prefetch_related('tags').filter(
-                        Q(name__icontains=query) | Q(tags__name__icontains=query)
-                    ).distinct().order_by('id')
-                    serializer = self.create_pagination(products, self.get_serializer_class())
-                    response = serializer.data
-                else:
-                    response = {
-                        'count': 0,
-                        'next': None,
-                        'previous': None,
-                        'results': []
-                    }
+            Search.search_keyword(query, self.profile)
 
         except NotFound as e:
             status_code = e.status_code
@@ -87,6 +69,26 @@ class BranduSearchViewSet(BranduBaseViewSet):
                 'code': e.default_code,
                 'message': e.default_detail
             }
+
+        finally:
+            if query:
+                products = Product.objects.prefetch_related('tags').filter(
+                    Q(name__icontains=query) | Q(tags__name__icontains=query)
+                ).distinct().order_by('id')
+                posts = Post.objects.prefetch_related('tags').filter(
+                    Q(title__icontains=query) | Q(tags__name__icontains=query)
+                ).distinct().order_by('id')
+                response = {
+                    'products': self.create_pagination(products, self.get_serializer_class()).data,
+                    'posts': self.create_pagination(posts, PostSimpleSerializer).data
+                }
+            else:
+                response = {
+                    'count': 0,
+                    'next': None,
+                    'previous': None,
+                    'results': []
+                }
 
         return brandu_standard_response(status_code=status_code, is_success=is_success, response=response)
 

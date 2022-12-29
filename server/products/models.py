@@ -110,3 +110,14 @@ class Content(models.Model):
     @property
     def url(self):
         return f'{settings.BASE_BACKEND_URL}{self.path}'
+
+
+class CustomProduct(BaseModel):
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='custom_products')
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='custom_products')
+    image = models.ImageField(upload_to='custom_product/%Y-%m')
+
+
+class CustomImage(models.Model):
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='custom_images')
+    image = models.ImageField(upload_to='custom_product/%Y-%m', null=True)
