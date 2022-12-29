@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from communities.models import Post
-from communities.serializers import PostSerializer, PostImageSerializer
+from communities.serializers import PostSerializer, PostImageSerializer, PostCommentSerializer
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
@@ -21,9 +21,9 @@ class BranduPostViewSet(BranduBaseViewSet):
 
     def get_permissions(self):
         permission_classes = self.permission_classes
-        if self.action == 'create':
+        if self.action in ['create', 'create_comment', 'images']:
             permission_classes = [IsAuthenticated]
-        elif self.action in ['partial_update', 'destroy', 'images']:
+        elif self.action in ['partial_update', 'destroy']:
             permission_classes = [IsAuthor]
         return [permission() for permission in permission_classes]
 
@@ -108,6 +108,40 @@ class BranduPostViewSet(BranduBaseViewSet):
             response = {
                 'image': request.build_absolute_uri(image)
             }
+
+        except ValidationError as e:
+            status_code = e.status_code
+            is_success = False
+            response = {
+                'code': e.status_code,
+                'message': e.default_detail
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(detail=True, methods=['GET'])
+    def comments(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        post = self.get_object()
+        comments = post.comments.all()
+        serializer = PostCommentSerializer(comments, many=True)
+        response = serializer.data
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @comments.mapping.post
+    def create_comment(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_201_CREATED
+        is_success = True
+
+        try:
+            post = self.get_object()
+            serializer = PostCommentSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer, login_required=True, post=post)
+            response = serializer.data
 
         except ValidationError as e:
             status_code = e.status_code

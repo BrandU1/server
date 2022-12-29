@@ -22,7 +22,7 @@ class PostTag(models.Model):
 
 
 class Comment(BaseModel):
-    post = models.ForeignKey('communities.Post', on_delete=models.CASCADE)
+    post = models.ForeignKey('communities.Post', on_delete=models.CASCADE, related_name='comments')
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     replies = models.ManyToManyField('self')
-    comment = models.CharField(max_length=500)
+    comment = models.TextField()
