@@ -5,7 +5,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 from .base import *
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     # For API Gateway Server

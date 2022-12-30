@@ -1,5 +1,3 @@
-from PIL import Image
-from rembg import remove
 from rest_framework import serializers
 
 from accounts.models import Profile
@@ -136,11 +134,3 @@ class CustomImageSerializer(serializers.ModelSerializer):
         model = CustomImage
         fields = ['id', 'profile', 'image']
         read_only_fields = ['profile']
-
-    def create(self, validated_data):
-        image = validated_data.pop('image')
-        new_image = Image.open(image)
-        removed_image = remove(new_image)
-        instance: CustomImage = super().create(validated_data)
-        instance.image.save(image.name, removed_image)
-        return instance
