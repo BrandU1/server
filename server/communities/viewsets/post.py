@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from communities.models import Post
+from communities.models import Post, Comment
 from communities.serializers import PostSerializer, PostImageSerializer, PostCommentSerializer, PostSimpleSerializer
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
@@ -134,8 +134,7 @@ class BranduPostViewSet(BranduBaseViewSet):
         status_code = status.HTTP_200_OK
         is_success = True
 
-        post = self.get_object()
-        comments = post.comments.all()
+        comments = Comment.not_deleted.filter(post_id=pk)
         serializer = PostCommentSerializer(comments, many=True)
         response = serializer.data
 
