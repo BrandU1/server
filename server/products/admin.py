@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import Product, MainCategory, SubCategory, Brand, Review, HashTag, Content, ProductImage, ProductOption, \
-    Color
+    Color, CustomImage
 
 
 @admin.register(Product)
@@ -51,4 +51,9 @@ class ProductOptionAdmin(admin.ModelAdmin):
 
 @admin.register(Color)
 class ProductColorAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(CustomImage)
+class CustomImageAdmin(admin.ModelAdmin):
     pass

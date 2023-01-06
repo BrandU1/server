@@ -54,6 +54,5 @@ class InquirySerializer(serializers.ModelSerializer):
         })
         if not images:
             return instance
-        instance.images.set(map(lambda image: InquiryImage.objects.create(inquiry=inquiry, image=image), images))
+        instance.images.set(map(lambda image: InquiryImage.objects.create(inquiry=instance, image=image), images))
         return instance
-

@@ -5,6 +5,7 @@ from products.models import (
     Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color, ProductImage,
     Content, HashTag, CustomProduct, CustomImage
 )
+from utils.remove import remove_background
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -134,3 +135,10 @@ class CustomImageSerializer(serializers.ModelSerializer):
         model = CustomImage
         fields = ['id', 'profile', 'image']
         read_only_fields = ['profile']
+
+    def create(self, validated_data):
+        image = validated_data.pop('image')
+        profile = validated_data.pop('profile')
+        new = remove_background(image, profile)
+        instance = CustomImage.objects.create(profile=profile, image=new)
+        return instance

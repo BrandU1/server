@@ -115,7 +115,7 @@ class Content(models.Model):
 class CustomProduct(BaseModel):
     product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='custom_products')
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='custom_products')
-    image = models.ImageField(upload_to='custom_product/%Y-%m')
+    image = models.ImageField(upload_to='custom_product/%Y-%m', null=True)
 
 
 class CustomImage(models.Model):

@@ -4,14 +4,14 @@ from rest_framework.permissions import IsAuthenticated
 
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
-from products.models import CustomProduct
-from products.serializers import CustomProductSerializer
+from products.models import CustomImage
+from products.serializers import CustomImageSerializer
 
 
-class BranduCustomViewSet(BranduBaseViewSet):
-    model = CustomProduct
-    queryset = CustomProduct.objects.all()
-    serializer_class = CustomProductSerializer
+class BranduCustomImageViewSet(BranduBaseViewSet):
+    model = CustomImage
+    queryset = CustomImage.objects.all()
+    serializer_class = CustomImageSerializer
     permission_classes = [IsAuthenticated]
     login_required = True
 
@@ -32,5 +32,14 @@ class BranduCustomViewSet(BranduBaseViewSet):
                 'code': e.status_code,
                 'message': e.default_detail
             }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    def list(self, request, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        serializer = self.serializer_class(self.queryset, many=True)
+        response = serializer.data
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
