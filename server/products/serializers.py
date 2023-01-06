@@ -129,6 +129,11 @@ class CustomProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'profile', 'image']
         read_only_fields = ['profile']
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['product'] = ProductSimpleSerializer(instance.product).data
+        return data
+
 
 class CustomImageSerializer(serializers.ModelSerializer):
     class Meta:
