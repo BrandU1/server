@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from accounts.models import Address, Profile, Point, Notify, Platform, Basket, WishList
 from products.models import Review
-from products.serializers import ProductSimpleSerializer
+from products.serializers import ProductSimpleSerializer, CustomProductSerializer
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -86,11 +86,11 @@ class WishListSerializer(serializers.ModelSerializer):
 
 
 class BasketSerializer(serializers.ModelSerializer):
-    product = ProductSimpleSerializer(read_only=True)
+    custom_product = CustomProductSerializer(read_only=True)
 
     class Meta:
         model = Basket
-        fields = ['product', 'amount', 'is_purchase']
+        fields = ['custom_product', 'amount', 'is_purchase']
 
 
 class ProfileSimpleSerializer(serializers.ModelSerializer):

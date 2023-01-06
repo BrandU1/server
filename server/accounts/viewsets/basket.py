@@ -1,7 +1,7 @@
 from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
@@ -31,6 +31,7 @@ class BranduBasketViewSet(BranduBaseViewSet):
 
         try:
             baskets = self.get_queryset()
+            print(baskets)
             serializer = self.serializer_class(baskets, many=True)
             response = serializer.data
 

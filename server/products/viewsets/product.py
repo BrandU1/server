@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny
 
+from accounts.models import Basket
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
 from orders.models import OrderProduct
@@ -131,7 +132,9 @@ class BranduProductViewSet(BranduBaseViewSet):
             serializer = self.serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer, login_required=True)
+            Basket.add(self.profile, serializer.instance)
             response = serializer.data
+
 
         except ValidationError as e:
             status_code = e.status_code

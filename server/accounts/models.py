@@ -2,13 +2,14 @@ import os
 from typing import Optional
 
 import requests
-from core.exceptions.product import RelationAlreadyExistException, RelationDoesNotExistException
-from core.exceptions.profile import ProfileNotAllowException, ProfileNotExistException
-from core.mixins import BaseModel
 from django.contrib.auth.models import AbstractUser
 from django.core.files.images import ImageFile
 from django.db import models
 from django.db.models import UniqueConstraint, Deferrable
+
+from core.exceptions.product import RelationAlreadyExistException, RelationDoesNotExistException
+from core.exceptions.profile import ProfileNotAllowException, ProfileNotExistException
+from core.mixins import BaseModel
 
 
 class User(AbstractUser):
@@ -41,8 +42,8 @@ class Profile(BaseModel):
     point = models.IntegerField(default=0)
     wishes = models.ManyToManyField('products.Product', through='accounts.WishList',
                                     through_fields=('profile', 'product'), related_name='+')
-    baskets = models.ManyToManyField('products.Product', through='accounts.Basket',
-                                     through_fields=('profile', 'product'), related_name='+')
+    baskets = models.ManyToManyField('products.CustomProduct', through='accounts.Basket',
+                                     through_fields=('profile', 'custom_product'), related_name='+')
     scraps = models.ManyToManyField('communities.Post', related_name='+')
 
     @classmethod
@@ -158,7 +159,7 @@ class WishList(models.Model):
 
 class Basket(models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')
-    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='+')
+    custom_product = models.ForeignKey('products.CustomProduct', on_delete=models.CASCADE, related_name='+')
     amount = models.IntegerField(default=1)
     is_purchase = models.BooleanField(default=False)
 
