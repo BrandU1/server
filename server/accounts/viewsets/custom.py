@@ -16,7 +16,7 @@ class BranduCustomImageViewSet(BranduBaseViewSet):
     login_required = True
 
     def create(self, request, *args, **kwargs):
-        status_code = status.HTTP_200_OK
+        status_code = status.HTTP_201_CREATED
         is_success = True
 
         try:
@@ -39,7 +39,7 @@ class BranduCustomImageViewSet(BranduBaseViewSet):
         status_code = status.HTTP_200_OK
         is_success = True
 
-        serializer = self.serializer_class(self.queryset, many=True)
+        serializer = self.serializer_class(self.get_queryset(), many=True)
         response = serializer.data
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
