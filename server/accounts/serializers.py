@@ -90,7 +90,7 @@ class BasketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Basket
-        fields = ['custom_product', 'amount', 'is_purchase']
+        fields = ['id', 'custom_product', 'amount', 'is_purchase']
 
 
 class ProfileSimpleSerializer(serializers.ModelSerializer):
