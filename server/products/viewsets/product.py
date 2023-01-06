@@ -4,14 +4,15 @@ from django.core.cache import cache
 from django.db.models import F, Subquery
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny
 
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
 from orders.models import OrderProduct
-from products.models import Product, ProductViewCount, Review, MainCategory, Content
-from products.serializers import ProductSerializer, ReviewSerializer, ContentSerializer, MainCategorySerializer
+from products.models import Product, ProductViewCount, Review, MainCategory, Content, CustomProduct
+from products.serializers import ProductSerializer, ReviewSerializer, ContentSerializer, MainCategorySerializer, \
+    CustomProductSerializer
 
 
 class BranduProductViewSet(BranduBaseViewSet):
@@ -114,6 +115,40 @@ class BranduProductViewSet(BranduBaseViewSet):
 
         categories = MainCategory.objects.all()
         serializer = MainCategorySerializer(categories, many=True)
+        response = serializer.data
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(
+        detail=False, methods=['POST'], serializer_class=CustomProductSerializer,
+        queryset=CustomProduct.objects.all()
+    )
+    def customs(self, request, *args, **kwargs):
+        status_code = status.HTTP_201_CREATED
+        is_success = True
+
+        try:
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer, login_required=True)
+            response = serializer.data
+
+        except ValidationError as e:
+            status_code = e.status_code
+            is_success = False
+            response = {
+                'code': e.status_code,
+                'message': e.default_detail
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @customs.mapping.get
+    def custom_list(self, request, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        serializer = self.serializer_class(self.get_queryset(), many=True)
         response = serializer.data
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
