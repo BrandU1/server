@@ -168,14 +168,14 @@ class Basket(models.Model):
         """ Basket에 새로운 상품을 추가하는 함수 """
         if Basket.objects.filter(profile=profile, custom_product=custom_product).exists():
             raise RelationAlreadyExistException()
-        profile.baskets.add(product)
+        profile.baskets.add(custom_product)
 
     @staticmethod
     def remove(profile, custom_product):
         """ Basket에 있는 상품을 제거하는 함수 """
         if not Basket.objects.filter(profile=profile, custom_product=custom_product).exists():
             raise RelationDoesNotExistException()
-        profile.baskets.remove(product)
+        profile.baskets.remove(custom_product)
 
     def purchase(self, amount: int):
         """ Basket에 담긴 상품을 구매하는 함수 """
