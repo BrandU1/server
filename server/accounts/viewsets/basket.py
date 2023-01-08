@@ -10,6 +10,7 @@ from accounts.serializers import BasketSerializer
 from core.exceptions.product import RelationAlreadyExistException, RelationDoesNotExistException
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
+from products.models import CustomProduct
 from products.models import Product
 
 
@@ -54,7 +55,8 @@ class BranduBasketViewSet(BranduBaseViewSet):
 
         try:
             product = self.get_product(pk=pk)
-            Basket.add(profile=self.profile, product=product)
+            custom_product = CustomProduct.objects.filter(product=product, profile=self.profile).last()
+            Basket.add(profile=self.profile, custom_product=custom_product)
             response = {
                 'message': '장바구니에 추가되었습니다.'
             }
@@ -85,7 +87,8 @@ class BranduBasketViewSet(BranduBaseViewSet):
 
         try:
             product = self.get_product(pk=pk)
-            Basket.remove(profile=self.profile, product=product)
+            custom_product = CustomProduct.objects.filter(product=product, profile=self.profile).last()
+            Basket.remove(profile=self.profile, custom_product=custom_product)
             response = {}
 
         except PermissionDenied as e:

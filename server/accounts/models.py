@@ -164,16 +164,16 @@ class Basket(models.Model):
     is_purchase = models.BooleanField(default=False)
 
     @staticmethod
-    def add(profile, product):
+    def add(profile, custom_product):
         """ Basket에 새로운 상품을 추가하는 함수 """
-        if profile.baskets.filter(id=product.id).exists():
+        if Basket.objects.filter(profile=profile, custom_product=custom_product).exists():
             raise RelationAlreadyExistException()
         profile.baskets.add(product)
 
     @staticmethod
-    def remove(profile, product):
+    def remove(profile, custom_product):
         """ Basket에 있는 상품을 제거하는 함수 """
-        if not profile.baskets.filter(id=product.id).exists():
+        if not Basket.objects.filter(profile=profile, custom_product=custom_product).exists():
             raise RelationDoesNotExistException()
         profile.baskets.remove(product)
 
