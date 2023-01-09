@@ -27,7 +27,10 @@ class OrderProductsSerializer(serializers.Serializer):
         if not Product.objects.filter(pk=attrs['product']).exists():
             raise serializers.ValidationError("상품이 존재하지 않습니다.")
 
-        if not Basket.objects.filter(product_id=attrs['product'], profile=self.context['profile']).exists():
+        if not Basket.objects.filter(
+                custom_product__product_id=attrs['product'],
+                profile=self.context['profile']
+        ).exists():
             raise serializers.ValidationError("장바구니에 상품이 존재하지 않습니다.")
         return attrs
 
@@ -49,9 +52,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: dict) -> Order:
         products = validated_data.pop('products')
-        user = self.context.get("request").user
-        profile = Profile.get_profile_or_exception(user.profile.id)
-        order = Order.objects.create(profile=profile, **validated_data)
+        order = Order.objects.create(profile=self.context.get('profile'), **validated_data)
         order.products.set([OrderProduct.objects.create(
             order=order, product_id=product['product'], count=product['count']
         ) for product in products])
