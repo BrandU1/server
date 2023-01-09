@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from .views import KakaoLoginAPI, NaverLoginAPI, GoogleLoginAPI, generate_token
+from .views import KakaoLoginAPI, NaverLoginAPI, GoogleLoginAPI, generate_token, TestLoginAPIView
 
 urlpatterns = [
     path('kakao/login', KakaoLoginAPI.as_view()),
@@ -9,4 +9,5 @@ urlpatterns = [
     path('google/login', GoogleLoginAPI.as_view()),
     path('refresh', TokenRefreshView.as_view()),
     path('token', generate_token),
+    path('test/login', TestLoginAPIView.as_view()),
 ]
