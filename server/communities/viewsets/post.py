@@ -31,6 +31,8 @@ class BranduPostViewSet(BranduBaseViewSet):
         status_code = status.HTTP_200_OK
         is_success = True
 
+        if self.request.query_params.get('offset') == "false":
+            return brandu_standard_response(is_success=is_success, response=[], status_code=status_code)
         posts = self.get_queryset()
         serializer = self.create_pagination(queryset=posts, serializer=PostSimpleSerializer)
         response = serializer.data

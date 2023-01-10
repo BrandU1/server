@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 from datetime import datetime
@@ -20,6 +21,12 @@ def generate_order_number():
     minute = str(now.minute).zfill(2)
     random_number = str(randint(1, 100000)).zfill(6)
     return f'{year}{month}-{day}{hour}{minute}-{random_number}'
+
+
+def encrypt_secret_key(key: str):
+    bytes_key = key.encode('UTF-8')
+    base64_bytes = base64.b64encode(bytes_key)
+    return base64_bytes.decode('UTF-8')
 
 
 class Order(BaseModel):
@@ -60,7 +67,7 @@ class Order(BaseModel):
         request = requests.post(
             'https://api.tosspayments.com/v1/payments/confirm',
             headers={
-                'Authorization': f'Basic {os.environ.get("TOSSPAYMENT_API_KEY")}',
+                'Authorization': f'Basic {encrypt_secret_key(os.environ.get("TOSSPAYMENT_SECRET_KEY"))}',
                 'Content-Type': 'application/json',
             }, data=json.dumps({
                 'paymentKey': payment_key,
