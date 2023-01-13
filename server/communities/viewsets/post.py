@@ -98,7 +98,7 @@ class BranduPostViewSet(BranduBaseViewSet):
         status_code = status.HTTP_200_OK
         is_success = True
 
-        cached = cache.get('post', pk)
+        cached = cache.get(f'post_{pk}')
         post = self.get_object()
 
         if not cached:
