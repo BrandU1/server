@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 COPY . .
 
-RUN apt-get update && apt-get install -y
+RUN apt-get update -y && apt-get upgrade -y
 RUN apt-get install -y python3.10 python3-pip virtualenv
 RUN virtualenv .venv --python=python3.10
 RUN . .venv/bin/activate
