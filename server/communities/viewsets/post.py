@@ -98,9 +98,15 @@ class BranduPostViewSet(BranduBaseViewSet):
         status_code = status.HTTP_200_OK
         is_success = True
 
+        cached = cache.get('post', pk)
         post = self.get_object()
-        serializer = self.serializer_class(post, context={'request': request})
-        response = serializer.data
+
+        if not cached:
+            serializer = self.serializer_class(post, context={'request': request})
+            response = serializer.data
+        else:
+            response = cached
+
         response.update({
             'comments': post.comments.count(),
             'likes': post.likes.count(),
