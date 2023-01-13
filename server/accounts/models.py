@@ -44,7 +44,7 @@ class Profile(BaseModel):
                                     through_fields=('profile', 'product'), related_name='+')
     baskets = models.ManyToManyField('products.CustomProduct', through='accounts.Basket',
                                      through_fields=('profile', 'custom_product'), related_name='+')
-    scraps = models.ManyToManyField('communities.Post', related_name='+')
+    scraps = models.ManyToManyField('communities.Post', related_name='scraps')
 
     @classmethod
     def create(cls, created: bool, user: User, platform: str, platform_id: str, profile_image: Optional[str],

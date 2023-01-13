@@ -1,5 +1,6 @@
 from django.db import models
 
+from core.exceptions.product import RelationAlreadyExistException, RelationDoesNotExistException
 from core.mixins import BaseModel
 
 
@@ -11,6 +12,21 @@ class Post(BaseModel):
     hits = models.PositiveIntegerField(default=1)
     tags = models.ManyToManyField('communities.PostTag', blank=True, related_name='posts')
     likes = models.ManyToManyField('accounts.Profile', blank=True, related_name='post_likes')
+
+    def like(self, profile):
+        if self.likes.filter(id=profile.id).exists():
+            raise RelationAlreadyExistException()
+        self.likes.add(profile)
+
+    def unlike(self, profile):
+        if not self.likes.filter(id=profile.id).exists():
+            raise RelationDoesNotExistException()
+        self.likes.remove(profile)
+
+
+class PostViewCount(BaseModel):
+    post = models.ForeignKey('communities.Post', on_delete=models.CASCADE, related_name='view_count')
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
 
 
 class PostImage(models.Model):

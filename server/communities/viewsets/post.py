@@ -1,12 +1,15 @@
+from datetime import date
+
 from django.core.cache import cache
 from django.db.models import Count
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from communities.models import Post, Comment
+from communities.models import Post, Comment, PostViewCount
 from communities.serializers import PostSerializer, PostImageSerializer, PostCommentSerializer, PostSimpleSerializer
+from core.exceptions.product import RelationAlreadyExistException
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
@@ -26,6 +29,21 @@ class BranduPostViewSet(BranduBaseViewSet):
         elif self.action in ['partial_update', 'destroy']:
             permission_classes = [IsAuthor]
         return [permission() for permission in permission_classes]
+
+    def update_view_count(self, post) -> int:
+        try:
+            if self.profile:
+                PostViewCount.objects.get_or_create(
+                    profile=self.profile,
+                    post=post,
+                    created__date=date.today()
+                )
+
+        except PermissionDenied:
+            pass
+
+        finally:
+            return post.view_count.count()
 
     def list(self, request, *args, **kwargs):
         status_code = status.HTTP_200_OK
@@ -83,6 +101,12 @@ class BranduPostViewSet(BranduBaseViewSet):
         post = self.get_object()
         serializer = self.serializer_class(post, context={'request': request})
         response = serializer.data
+        response.update({
+            'comments': post.comments.count(),
+            'likes': post.likes.count(),
+            'scraps': post.scraps.count(),
+            'hits': self.update_view_count(post)
+        })
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
@@ -155,6 +179,48 @@ class BranduPostViewSet(BranduBaseViewSet):
             response = serializer.data
 
         except ValidationError as e:
+            status_code = e.status_code
+            is_success = False
+            response = {
+                'code': e.status_code,
+                'message': e.default_detail
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(detail=True, methods=['POST'])
+    def like(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_201_CREATED
+        is_success = True
+
+        try:
+            post = self.get_object()
+            post.like(self.profile)
+            response = {
+                'message': '좋아요를 눌렀습니다.'
+            }
+
+        except RelationAlreadyExistException as e:
+            status_code = e.status_code
+            is_success = False
+            response = {
+                'code': e.status_code,
+                'message': e.default_detail
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @like.mapping.delete
+    def dislike(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_204_NO_CONTENT
+        is_success = True
+
+        try:
+            post = self.get_object()
+            post.unlike(self.profile)
+            response = {}
+
+        except RelationAlreadyExistException as e:
             status_code = e.status_code
             is_success = False
             response = {

@@ -2,9 +2,9 @@ version: "3.7"
 
 services:
   django:
-    container_name: django
+    container_name: django-dev
     build: server
-    command: gunicorn --bind 0.0.0.0:8000 --access-logfile /logs/access.log --error-logfile /logs/error.log server.wsgi.production:application
+    command: gunicorn --bind 0.0.0.0:8000 --access-logfile /logs/access.log --error-logfile /logs/error.log server.wsgi.local:application
     volumes:
       - logs:/logs
       - media:/media
@@ -12,12 +12,12 @@ services:
     env_file:
       - server/.env
     environment:
-      - ENV=production
+      - ENV=local
     expose:
       - "8000"
 
   nginx:
-    container_name: nginx
+    container_name: nginx-dev
     build: nginx
     volumes:
       - media:/media

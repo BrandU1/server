@@ -24,10 +24,10 @@ MIDDLEWARE += [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': get_env_variable('DEV_DATABASE_NAME'),
-        'USER': get_env_variable('DEV_DATABASE_USER'),
-        'PASSWORD': get_env_variable('DEV_DATABASE_PASSWORD'),
-        'HOST': get_env_variable('DEV_DATABASE_HOST'),
+        'NAME': get_env_variable('DATABASE_NAME'),
+        'USER': get_env_variable('DATABASE_USER'),
+        'PASSWORD': get_env_variable('DATABASE_PASSWORD'),
+        'HOST': get_env_variable('DATABASE_HOST'),
         'PORT': '5432',
     }
 }
@@ -52,16 +52,26 @@ SWAGGER_SETTINGS = {
     }
 }
 
+MEDIAFILES_LOCATION = 'media'
+STATICFILES_LOCATION = 'static'
+
 CORS_ORIGIN_ALLOW_ALL = True
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK": lambda request: True,
+AWS_S3_ACCESS_KEY_ID = get_env_variable('AMAZON_S3_ACCESS_KEY')
+AWS_S3_SECRET_ACCESS_KEY = get_env_variable('AMAZON_S3_SECRET')
+AWS_S3_REGION_NAME = 'ap-northeast-2'
+AWS_STORAGE_BUCKET_NAME = get_env_variable('AMAZON_S3_BUCKET')
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
 }
 
-BASE_BACKEND_URL = 'http://localhost:8000'
+AWS_S3_SECURE_URLS = False
+AWS_QUERYSTRING_AUTH = False
+# AWS_DEFAULT_ACL = 'public-read'
+
+# BASE_BACKEND_URL = 'https://api.brandu.shop'
+DEFAULT_FILE_STORAGE = 'server.storages.MediaStorage'
+STATICFILES_STORAGE = 'server.storages.StaticStorage'
 
 SECURE_SSL_REDIRECT = False
 
@@ -123,7 +133,7 @@ LOGGING = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://localhost:6379/1',
+        'LOCATION': 'redis://redis-dev:6379/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
