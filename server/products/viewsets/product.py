@@ -49,27 +49,27 @@ class BranduProductViewSet(BranduBaseViewSet):
         is_success = True
         payload = {}
         cached_product = cache.get(f'product_{pk}')
-
         try:
+            product = self.get_object()
             if not cached_product:
-                product = self.get_object()
                 serializer = self.serializer_class(product)
                 payload = serializer.data
-                payload.update({
-                    'view_count': self.update_view_count(product)
-                })
                 cache.set(f'product_{pk}', payload, 60 * 60)
+
+            else:
+                payload = cached_product
+            payload.update({
+                'view_count': self.update_view_count(product),
+            })
+            payload.update({
+                'is_like': self.profile.wishes.filter(pk=pk).exists() if self.profile else False,
+            })
+            response = payload
 
         except PermissionDenied as e:
             status_code = status.HTTP_403_FORBIDDEN
             is_success = False
-            response = {
-                'code': 403,
-                'message': str(e.default_detail)
-            }
-
-        finally:
-            response = cached_product if cached_product else payload
+            response = payload
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 

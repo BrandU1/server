@@ -12,7 +12,8 @@ ALLOWED_HOSTS = [
     "localhost",
     'api.brandu.shop',
     '127.0.0.1',
-    '172.31.37.121'
+    '172.31.37.121',
+    '54.180.101.126'
 ]
 
 # Database
