@@ -27,9 +27,12 @@ class PostImageSerializer(serializers.ModelSerializer):
 
 
 class PostCommentSerializer(serializers.ModelSerializer):
-    profile = ProfileSimpleSerializer()
-
     class Meta:
         model = Comment
         fields = ['id', 'profile', 'comment', 'created']
         read_only_fields = ['profile']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['profile'] = ProfileSimpleSerializer(instance.profile).data
+        return data
