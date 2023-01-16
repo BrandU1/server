@@ -138,10 +138,13 @@ class CustomProductSerializer(serializers.ModelSerializer):
 class CustomImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomImage
-        fields = ['id', 'profile', 'image']
-        read_only_fields = ['profile']
+        fields = ['id', 'profile', 'image', 'is_remove']
+        read_only_fields = ['profile', 'is_remove']
 
     def create(self, validated_data):
+        is_remove = validated_data.pop('is_remove')
+        if not is_remove:
+            return super().create(validated_data)
         image = validated_data.pop('image')
         profile = validated_data.pop('profile')
         new = remove_background(image, profile)

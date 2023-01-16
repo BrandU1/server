@@ -2,11 +2,12 @@ from django.db.models import Count
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from accounts.models import Profile, Notify
-from accounts.serializers import ProfileSerializer, ProfilePointSerializer, NotifySerializer
+from accounts.serializers import ProfileSerializer, ProfilePointSerializer, NotifySerializer, FollowingProfileSerializer
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
@@ -18,6 +19,10 @@ class BranduProfileViewSet(BranduBaseViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = ProfileSerializer
     login_required = True
+
+    @staticmethod
+    def get_profile(pk=None):
+        return get_object_or_404(Profile, pk=pk)
 
     def get_permissions(self) -> list:
         permission_classes = self.permission_classes
@@ -45,6 +50,19 @@ class BranduProfileViewSet(BranduBaseViewSet):
                 'message': e.default_detail
             }
 
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        profile = self.get_profile(pk=pk)
+        serializer = self.serializer_class(profile)
+        response = serializer.data
+        response.update({
+            'followers': profile.followers.count(),
+            'followings': profile.following.count()
+        })
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     @action(detail=False, methods=['GET'])
@@ -123,4 +141,15 @@ class BranduProfileViewSet(BranduBaseViewSet):
                 'message': e.default_detail
             }
 
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(methods=['GET'], detail=False, serializer_class=FollowingProfileSerializer, url_path='follows')
+    def follow_list(self, request, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+        profile: Profile = self.profile
+        response = {
+            'follower': self.serializer_class(profile.followers.all(), many=True).data,
+            'following': self.serializer_class(profile.following.all(), many=True).data
+        }
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)

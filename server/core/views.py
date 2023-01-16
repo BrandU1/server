@@ -51,10 +51,10 @@ class BranduBaseViewSet(GenericViewSet):
 
         return queryset
 
-    def perform_create(self, serializer, login_required=False, *args, **kwargs) -> None:
+    def perform_create(self, serializer, login_required=False, *args, **kwargs):
         if self.login_required or login_required:
-            serializer.save(profile=self.profile, **kwargs)
-        serializer.save(**kwargs)
+            return serializer.save(profile=self.profile, **kwargs)
+        return serializer.save(**kwargs)
 
     def perform_destroy(self, instance) -> None:
         if hasattr(self.model, 'not_deleted'):

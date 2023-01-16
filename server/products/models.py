@@ -121,3 +121,4 @@ class CustomProduct(BaseModel):
 class CustomImage(models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='custom_images')
     image = models.ImageField(upload_to='custom_product/%Y-%m', null=True)
+    is_remove = models.BooleanField(default=False)

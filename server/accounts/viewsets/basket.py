@@ -47,15 +47,14 @@ class BranduBasketViewSet(BranduBaseViewSet):
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     @swagger_auto_schema(request_body=no_body)
-    @action(detail=False, methods=['POST'], url_path='(?P<pk>[0-9]+)')
+    @action(detail=False, methods=['POST'], url_path='(?P<pk>[0-9]+)', queryset=CustomProduct.objects.all())
     def create_basket(self, request, pk=None, *args, **kwargs):
         """ 장바구니 추가 API """
         status_code = status.HTTP_201_CREATED
         is_success = True
 
         try:
-            product = self.get_product(pk=pk)
-            custom_product = CustomProduct.objects.filter(product=product, profile=self.profile).last()
+            custom_product = self.get_object()
             Basket.add(profile=self.profile, custom_product=custom_product)
             response = {
                 'message': '장바구니에 추가되었습니다.'
@@ -86,8 +85,7 @@ class BranduBasketViewSet(BranduBaseViewSet):
         is_success = True
 
         try:
-            product = self.get_product(pk=pk)
-            custom_product = CustomProduct.objects.filter(product=product, profile=self.profile).last()
+            custom_product = self.get_object()
             Basket.remove(profile=self.profile, custom_product=custom_product)
             response = {}
 

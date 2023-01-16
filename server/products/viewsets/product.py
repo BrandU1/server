@@ -40,8 +40,7 @@ class BranduProductViewSet(BranduBaseViewSet):
         except PermissionDenied:
             pass
 
-        finally:
-            return product.view_count.count()
+        return product.view_count.count()
 
     # 상품 디테일 조회
     def retrieve(self, request, pk=None, *args, **kwargs):
@@ -134,7 +133,6 @@ class BranduProductViewSet(BranduBaseViewSet):
             self.perform_create(serializer, login_required=True)
             Basket.add(self.profile, serializer.instance)
             response = serializer.data
-
 
         except ValidationError as e:
             status_code = e.status_code
