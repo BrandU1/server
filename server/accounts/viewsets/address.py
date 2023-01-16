@@ -2,6 +2,7 @@ from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
 from accounts.models import Address
@@ -13,7 +14,7 @@ from core.views import BranduBaseViewSet
 
 class BranduAddressViewSet(BranduBaseViewSet):
     model = Address
-    queryset = Address.objects.all()
+    queryset = Address.not_deleted.all()
     permission_classes = [IsAuthenticated, IsAuthor]
     serializer_class = AddressSerializer
     login_required = True
@@ -31,29 +32,6 @@ class BranduAddressViewSet(BranduBaseViewSet):
         try:
             address = self.get_object()
             serializer = self.serializer_class(address)
-            response = serializer.data
-
-        except PermissionDenied as e:
-            status_code = status.HTTP_403_FORBIDDEN
-            is_success = False
-            response = {
-                'code': 403,
-                'message': str(e)
-            }
-
-        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
-
-    # 사용자 주소 목록 조회 API
-    def list(self, request, *args, **kwargs):
-        status_code = status.HTTP_200_OK
-        is_success = True
-
-        try:
-            addresses = self.get_queryset().values(
-                'id', 'is_main', 'name', 'recipient', 'address', 'road_name_address',
-                'detail_address', 'zip_code', 'phone_number', 'memo',
-            )
-            serializer = self.serializer_class(addresses, many=True)
             response = serializer.data
 
         except PermissionDenied as e:
@@ -93,7 +71,9 @@ class BranduAddressViewSet(BranduBaseViewSet):
         is_success = True
 
         try:
-            address = self.get_object()
+            address = get_object_or_404(Address, pk=pk)
+            if address.profile != self.profile:
+                raise PermissionDenied()
             serializer = self.serializer_class(address, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -123,7 +103,9 @@ class BranduAddressViewSet(BranduBaseViewSet):
         is_success = True
 
         try:
-            address = self.get_object()
+            address = get_object_or_404(Address, pk=pk)
+            if address.profile != self.profile:
+                raise PermissionDenied()
             self.perform_destroy(address)
             response = {
                 'message': '주소가 삭제되었습니다.'
@@ -146,7 +128,9 @@ class BranduAddressViewSet(BranduBaseViewSet):
         status_code = status.HTTP_200_OK
         is_success = True
 
-        address: Address = self.get_object()
+        address = get_object_or_404(Address, pk=pk)
+        if address.profile != self.profile:
+            raise PermissionDenied()
         address.set_main()
         serializer = self.serializer_class(address)
         response = serializer.data

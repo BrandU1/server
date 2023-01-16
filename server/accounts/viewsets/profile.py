@@ -6,9 +6,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-from accounts.models import Profile, Notify, Basket, WishList
+from accounts.models import Profile, Notify, Basket, WishList, Address
 from accounts.serializers import ProfileSerializer, ProfilePointSerializer, NotifySerializer, \
-    FollowingProfileSerializer, BasketSerializer, WishListSerializer
+    FollowingProfileSerializer, BasketSerializer, WishListSerializer, AddressSerializer
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
@@ -193,6 +193,47 @@ class BranduProfileViewSet(BranduBaseViewSet):
             response = {
                 'code': 403,
                 'error': str(e)
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(methods=['GET'], detail=False, queryset=Address.not_deleted.all(), serializer_class=AddressSerializer)
+    def addresses(self, request, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        try:
+            addresses = Address.not_deleted.filter(profile=self.profile)
+            serializer = self.serializer_class(addresses, many=True)
+            response = serializer.data
+
+        except PermissionDenied as e:
+            status_code = status.HTTP_403_FORBIDDEN
+            is_success = False
+            response = {
+                'code': 403,
+                'message': str(e)
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @addresses.mapping.post
+    def create(self, request, *args, **kwargs):
+        status_code = status.HTTP_201_CREATED
+        is_success = True
+
+        try:
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            response = serializer.data
+
+        except ValidationError as e:
+            status_code = status.HTTP_400_BAD_REQUEST
+            is_success = False
+            response = {
+                'code': 400,
+                'message': str(e)
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
