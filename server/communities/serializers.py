@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from accounts.serializers import ProfileSimpleSerializer
 from communities.models import Post, PostImage, Comment
 
 
@@ -26,6 +27,8 @@ class PostImageSerializer(serializers.ModelSerializer):
 
 
 class PostCommentSerializer(serializers.ModelSerializer):
+    profile = ProfileSimpleSerializer()
+
     class Meta:
         model = Comment
         fields = ['id', 'profile', 'comment', 'created']
