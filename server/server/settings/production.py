@@ -5,7 +5,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 from .base import *
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     # For API Gateway Server
@@ -101,7 +101,7 @@ CORS_ORIGIN_WHITELIST = [
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://localhost:6379/1',
+        'LOCATION': 'redis://redis:6379/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
