@@ -24,26 +24,6 @@ class BranduWishListViewSet(BranduBaseViewSet):
     def get_product(pk=None):
         return get_object_or_404(Product, pk=pk)
 
-    def list(self, request, *args, **kwargs):
-        """사용자 위시 리스트 목록 조회 API"""
-        status_code = status.HTTP_200_OK
-        is_success = True
-
-        try:
-            wishes = self.get_queryset()
-            serializer = self.serializer_class(wishes, many=True)
-            response = serializer.data
-
-        except PermissionDenied as e:
-            status_code = status.HTTP_403_FORBIDDEN
-            is_success = False
-            response = {
-                'code': 403,
-                'error': str(e)
-            }
-
-        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
-
     @swagger_auto_schema(request_body=no_body)
     @action(methods=['POST'], detail=False, url_path='(?P<pk>[0-9]+)', description='사용자 위시 리스트 추가')
     def create_with_pk(self, request, pk=None, *args, **kwargs):

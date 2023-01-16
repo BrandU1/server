@@ -1,13 +1,14 @@
 from django.db.models import Count
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-from accounts.models import Profile, Notify
-from accounts.serializers import ProfileSerializer, ProfilePointSerializer, NotifySerializer, FollowingProfileSerializer
+from accounts.models import Profile, Notify, Basket, WishList
+from accounts.serializers import ProfileSerializer, ProfilePointSerializer, NotifySerializer, \
+    FollowingProfileSerializer, BasketSerializer, WishListSerializer
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
@@ -152,4 +153,46 @@ class BranduProfileViewSet(BranduBaseViewSet):
             'follower': self.serializer_class(profile.followers.all(), many=True).data,
             'following': self.serializer_class(profile.following.all(), many=True).data
         }
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(methods=['GET'], detail=False, queryset=Basket.objects.all(), serializer_class=BasketSerializer)
+    def baskets(self, request, *args, **kwargs):
+        """ 장바구니 목록 조회 API """
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        try:
+            baskets = Basket.objects.filter(profile=self.profile)
+            serializer = self.serializer_class(baskets, many=True)
+            response = serializer.data
+
+        except PermissionDenied as e:
+            status_code = status.HTTP_403_FORBIDDEN
+            is_success = False
+            response = {
+                'code': 403,
+                'message': str(e.default_detail)
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(methods=['GET'], detail=False, queryset=WishList.objects.all(), serializer_class=WishListSerializer)
+    def wishes(self, request, *args, **kwargs):
+        """사용자 위시 리스트 목록 조회 API"""
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        try:
+            wishes = WishList.objects.filter(profile=self.profile)
+            serializer = self.serializer_class(wishes, many=True)
+            response = serializer.data
+
+        except PermissionDenied as e:
+            status_code = status.HTTP_403_FORBIDDEN
+            is_success = False
+            response = {
+                'code': 403,
+                'error': str(e)
+            }
+
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)

@@ -25,27 +25,6 @@ class BranduBasketViewSet(BranduBaseViewSet):
     def get_product(pk=None):
         return get_object_or_404(Product, pk=pk)
 
-    def list(self, request, *args, **kwargs):
-        """ 장바구니 목록 조회 API """
-        status_code = status.HTTP_200_OK
-        is_success = True
-
-        try:
-            baskets = self.get_queryset()
-            print(baskets)
-            serializer = self.serializer_class(baskets, many=True)
-            response = serializer.data
-
-        except PermissionDenied as e:
-            status_code = status.HTTP_403_FORBIDDEN
-            is_success = False
-            response = {
-                'code': 403,
-                'message': str(e.default_detail)
-            }
-
-        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
-
     @swagger_auto_schema(request_body=no_body)
     @action(detail=False, methods=['POST'], url_path='(?P<pk>[0-9]+)', queryset=CustomProduct.objects.all())
     def create_basket(self, request, pk=None, *args, **kwargs):
