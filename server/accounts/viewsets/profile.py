@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Subquery
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, PermissionDenied
@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from accounts.models import Profile, Notify, Basket, WishList, Address
 from accounts.serializers import ProfileSerializer, ProfilePointSerializer, NotifySerializer, \
     FollowingProfileSerializer, BasketSerializer, WishListSerializer, AddressSerializer
+from communities.models import Post
+from communities.serializers import PostSimpleSerializer
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
@@ -234,6 +236,60 @@ class BranduProfileViewSet(BranduBaseViewSet):
             response = {
                 'code': 400,
                 'message': str(e)
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(methods=['GET'], detail=False)
+    def scraps(self, request, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        try:
+            posts = Post.objects.filter(
+                id__in=Subquery(
+                    self.profile.scraps.all().values('id')
+                )
+            )
+            serializer = PostSimpleSerializer(posts, many=True)
+            response = serializer.data
+
+        except ValidationError as e:
+            status_code = status.HTTP_400_BAD_REQUEST
+            is_success = False
+            response = {
+                'code': 400,
+                'message': str(e)
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(methods=['POST'], detail=False, url_path='scraps/(?P<pk>[0-9]+)')
+    def create_scrap(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_201_CREATED
+        is_success = True
+        response = {}
+
+        if not self.profile.scraps.filter(id=pk).exists():
+            post = get_object_or_404(Post, pk=pk)
+            self.profile.scraps.add(post)
+            response = {
+                'message': '스크랩 되었습니다.'
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @create_scrap.mapping.delete
+    def delete_scrap(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_204_NO_CONTENT
+        is_success = True
+        response = {}
+
+        if self.profile.scraps.filter(id=pk).exists():
+            post = get_object_or_404(Post, pk=pk)
+            self.profile.scraps.remove(post)
+            response = {
+                'message': '스크랩 삭제되었습니다..'
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
