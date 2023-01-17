@@ -14,6 +14,8 @@ from communities.serializers import PostSimpleSerializer
 from core.permissions import IsAuthor
 from core.response import brandu_standard_response
 from core.views import BranduBaseViewSet
+from products.models import CustomImage
+from products.serializers import CustomImageSerializer
 
 
 class BranduProfileViewSet(BranduBaseViewSet):
@@ -291,5 +293,16 @@ class BranduProfileViewSet(BranduBaseViewSet):
             response = {
                 'message': '스크랩 삭제되었습니다..'
             }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(methods=['GET'], detail=False)
+    def customs(self, request, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        custom_images = CustomImage.objects.filter(profile=self.profile)
+        serializer = CustomImageSerializer(custom_images, many=True)
+        response = serializer.data
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
