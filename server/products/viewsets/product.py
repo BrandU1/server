@@ -139,7 +139,7 @@ class BranduProductViewSet(BranduBaseViewSet):
             is_success = False
             response = {
                 'code': e.status_code,
-                'message': e.default_detail
+                'message': e.detail
             }
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)

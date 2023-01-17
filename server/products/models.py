@@ -42,6 +42,7 @@ class Product(models.Model):
     backdrop_image = models.ImageField(upload_to='product/%Y-%m', null=True, blank=True)
     tags = models.ManyToManyField('products.HashTag', blank=True, related_name='products')
     price = models.IntegerField()
+    default_svg = models.TextField()
 
     def __str__(self):
         return self.name
