@@ -66,7 +66,6 @@ class BranduProductViewSet(BranduBaseViewSet):
             response = payload
 
         except PermissionDenied as e:
-            status_code = status.HTTP_403_FORBIDDEN
             is_success = False
             response = payload
 
