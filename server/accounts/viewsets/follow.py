@@ -24,7 +24,7 @@ class BranduFollowViewSet(BranduBaseViewSet):
 
     def get_permissions(self):
         permission_classes = self.permission_classes
-        if self.action == 'retrieve':
+        if self.action == 'follow_list':
             permission_classes = [AllowAny]
         return [permission() for permission in permission_classes]
 

@@ -113,7 +113,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['id', 'backdrop_image', 'profile_image', 'nickname', 'name', 'phone_number',
-                  'email', 'social_link', 'description', 'platforms']
+                  'email', 'social_link', 'description', 'platforms', 'point']
 
 
 class ReviewListSerializer(serializers.ModelSerializer):

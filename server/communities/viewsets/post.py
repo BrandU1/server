@@ -111,8 +111,19 @@ class BranduPostViewSet(BranduBaseViewSet):
             'comments': post.comments.count(),
             'likes': post.likes.count(),
             'scraps': post.scraps.count(),
-            'hits': self.update_view_count(post)
+            'hits': self.update_view_count(post),
+            'is_like': False,
+            'is_scrap': False
         })
+
+        try:
+            response.update({
+                'is_like': post.likes.filter(id=self.profile.id).exists(),
+                'is_scrap': post.scraps.filter(id=self.profile.id).exists(),
+            })
+
+        except PermissionDenied as e:
+            pass
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 

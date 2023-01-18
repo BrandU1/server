@@ -66,8 +66,19 @@ class BranduProfileViewSet(BranduBaseViewSet):
         response = serializer.data
         response.update({
             'followers': profile.followers.count(),
-            'followings': profile.following.count()
+            'followings': profile.following.count(),
         })
+
+        try:
+            response.update({
+                'is_follow': self.profile.following.filter(following=profile).exists()
+            })
+
+        except PermissionDenied as e:
+            response.update({
+                'is_follow': False
+            })
+
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
     @action(detail=False, methods=['GET'])
