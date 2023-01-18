@@ -41,7 +41,9 @@ class Product(models.Model):
     category = models.ForeignKey('products.SubCategory', on_delete=models.CASCADE)
     backdrop_image = models.ImageField(upload_to='product/%Y-%m', null=True, blank=True)
     tags = models.ManyToManyField('products.HashTag', blank=True, related_name='products')
+    rendering = models.FileField(upload_to='product/3d', null=True)
     price = models.IntegerField()
+
     default_svg = models.TextField()
 
     def __str__(self):
