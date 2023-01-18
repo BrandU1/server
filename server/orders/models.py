@@ -24,7 +24,8 @@ def generate_order_number():
 
 
 def encrypt_secret_key(key: str):
-    bytes_key = key.encode('UTF-8')
+    secret_key = f'{key}:'
+    bytes_key = secret_key.encode('UTF-8')
     base64_bytes = base64.b64encode(bytes_key)
     return base64_bytes.decode('UTF-8')
 
