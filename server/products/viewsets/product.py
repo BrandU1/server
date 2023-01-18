@@ -40,7 +40,7 @@ class BranduProductViewSet(BranduBaseViewSet):
 
         except PermissionDenied:
             pass
-        
+
         except MultipleObjectsReturned:
             pass
 
@@ -70,7 +70,6 @@ class BranduProductViewSet(BranduBaseViewSet):
             response = payload
 
         except PermissionDenied as e:
-            is_success = False
             response = payload
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
