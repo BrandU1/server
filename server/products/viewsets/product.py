@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.core.cache import cache
+from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import F, Subquery
 from rest_framework import status
 from rest_framework.decorators import action
@@ -38,6 +39,9 @@ class BranduProductViewSet(BranduBaseViewSet):
                 )
 
         except PermissionDenied:
+            pass
+        
+        except MultipleObjectsReturned:
             pass
 
         return product.view_count.count()
