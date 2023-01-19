@@ -1,13 +1,23 @@
 from rest_framework import serializers
 
+from accounts.models import Profile
 from accounts.serializers import ProfileSimpleSerializer
 from communities.models import Post, PostImage, Comment
 
 
 class PostSimpleSerializer(serializers.ModelSerializer):
+    is_scrap = serializers.SerializerMethodField()
+
     class Meta:
         model = Post
-        fields = ['id', 'title', 'backdrop_image', 'profile', 'created']
+        fields = ['id', 'title', 'backdrop_image', 'profile', 'created', 'is_scrap']
+
+    def get_is_scrap(self, obj) -> bool:
+        request = self.context.get("request", None)
+        if request is None or request.user.is_anonymous:
+            return False
+        profile = Profile.get_profile_or_exception(request.user.profile.id)
+        return profile.scraps.filter(id=obj.pk).exists()
 
 
 class PostSerializer(serializers.ModelSerializer):

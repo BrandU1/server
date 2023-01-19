@@ -1,7 +1,6 @@
 from datetime import date
 
 from django.core.cache import cache
-from django.db.models import Count
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, PermissionDenied
@@ -64,14 +63,13 @@ class BranduPostViewSet(BranduBaseViewSet):
         cached = cache.get('best_post')
 
         if not cached:
-            posts = Post.objects.prefetch_related('likes').annotate(
-                likes_count=Count('likes')
-            ).values('id', 'title', 'likes_count', 'backdrop_image')[:10]
-            cache.set('best_post', posts, 60 * 60)
-            payload = posts
+            posts = Post.objects.all()[:10]
+            serializer = PostSimpleSerializer(posts, many=True)
+            cache.set('best_post', serializer.data, 60 * 60)
+            payload = serializer.data
         else:
             payload = cached
-
+            
         return brandu_standard_response(is_success=is_success, response=payload, status_code=status_code)
 
     def create(self, request, *args, **kwargs):
