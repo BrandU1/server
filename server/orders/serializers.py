@@ -1,11 +1,10 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from accounts.models import Profile, Basket
+from accounts.models import Profile
 from accounts.serializers import AddressSerializer
 from orders.models import Order, OrderProduct, Payment, Delivery, DeliveryTracking
-from products.models import Product
-from products.serializers import ProductSimpleSerializer
+from products.serializers import CustomProductSerializer
 
 
 class OrderProductSerializer(serializers.ModelSerializer):
@@ -22,17 +21,6 @@ class OrderProductSerializer(serializers.ModelSerializer):
 class OrderProductsSerializer(serializers.Serializer):
     product = serializers.IntegerField()
     count = serializers.IntegerField()
-
-    def validate(self, attrs):
-        if not Product.objects.filter(pk=attrs['product']).exists():
-            raise serializers.ValidationError("상품이 존재하지 않습니다.")
-
-        if not Basket.objects.filter(
-                custom_product__product_id=attrs['product'],
-                profile=self.context['profile']
-        ).exists():
-            raise serializers.ValidationError("장바구니에 상품이 존재하지 않습니다.")
-        return attrs
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
@@ -61,17 +49,29 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     address = AddressSerializer()
-    products = ProductSimpleSerializer(many=True)
 
     class Meta:
         model = Order
         fields = ['id', 'products', 'address', 'created', 'name', 'order_number',
-                  'status', 'used_point', 'price', 'method', 'is_confirm', 'is_payment_confirm', 'coupon']
+                  'order_status', 'used_point', 'price', 'method', 'is_confirm', 'is_payment_confirm', 'coupon']
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['products'] = [
+            OrderProductSerializer(product).data for product in instance.products.all()
+        ]
+        return ret
+
+
+class OrderProductSerializer(serializers.ModelSerializer):
+    product = CustomProductSerializer()
+
+    class Meta:
+        model = OrderProduct
+        fields = '__all__'
 
 
 class PaymentSerializer(serializers.ModelSerializer):
-    order = OrderSerializer()
-
     class Meta:
         model = Payment
         fields = '__all__'

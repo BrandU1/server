@@ -87,10 +87,9 @@ class Order(BaseModel):
 
         data = request.json()
         self.is_payment_confirm = True
-        delivery = Delivery.objects.create(
-            order=self,
-            invoice_number=''
-        )
+        order = Order.objects.get(order_number=order_id)
+        order.order_status = "결제 완료"
+        order.save()
         return Payment.objects.create(
             order=self,
             platform='TOSS',
@@ -107,19 +106,13 @@ class Order(BaseModel):
         self.is_confirm = True
         self.save(update_fields=['is_confirm'])
 
-    @property
-    def status(self):
-        if self.is_confirm:
-            return 'confirm'
-        return self.delivery.status
-
     def __str__(self):
         return f'{self.name}/{self.order_number}'
 
 
 class OrderProduct(models.Model):
     order = models.ForeignKey('orders.Order', on_delete=models.CASCADE, related_name='products')
-    product = models.ForeignKey('products.Product', on_delete=models.SET_NULL, null=True)
+    product = models.ForeignKey('products.CustomProduct', on_delete=models.SET_NULL, null=True)
     count = models.IntegerField(default=1)
     option = models.ForeignKey('products.ProductOption', on_delete=models.SET_NULL, blank=True, null=True)
     discount = models.ForeignKey('products.Discount', on_delete=models.SET_NULL, blank=True, null=True)
