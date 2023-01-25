@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import requests
 from django.contrib.auth.models import AbstractUser
@@ -39,14 +40,14 @@ class Profile(BaseModel):
     social_link = models.CharField(max_length=30, null=True)
     description = models.TextField(null=True)
     point = models.IntegerField(default=0)
-    wish = models.ManyToManyField('products.Product', through='accounts.WishList',
-                                  through_fields=('profile', 'product'), related_name='+')
-    basket = models.ManyToManyField('products.Product', through='accounts.Basket',
+    wishes = models.ManyToManyField('products.Product', through='accounts.WishList',
                                     through_fields=('profile', 'product'), related_name='+')
-    scrapped = models.ManyToManyField('communities.Post', related_name='+')
+    baskets = models.ManyToManyField('products.CustomProduct', through='accounts.Basket',
+                                     through_fields=('profile', 'custom_product'), related_name='+')
+    scraps = models.ManyToManyField('communities.Post', related_name='scraps')
 
     @classmethod
-    def create(cls, created: bool, user: User, platform: str, platform_id: str, profile_image: str | None,
+    def create(cls, created: bool, user: User, platform: str, platform_id: str, profile_image: Optional[str],
                nickname: str = '', **kwargs) -> None:
         if not Platform.objects.filter(platform=platform, platform_id=platform_id).exists():
             Platform.objects.create(user=user, platform=platform, platform_id=platform_id)
@@ -88,14 +89,6 @@ class Profile(BaseModel):
         if cls.objects.filter(id=profile_id).exists():
             return cls.objects.get(id=profile_id)
         raise ProfileNotExistException()
-
-    @property
-    def favorites(self):
-        return self.wish.all()
-
-    @property
-    def buckets(self):
-        return self.basket.all()
 
 
 class Address(BaseModel):
@@ -152,37 +145,37 @@ class WishList(models.Model):
     @staticmethod
     def add(profile, product):
         """ WishList에 새로운 상품을 추가하는 함수 """
-        if profile.wish.filter(id=product.id).exists():
+        if profile.wishes.filter(id=product.id).exists():
             raise RelationAlreadyExistException()
-        profile.wish.add(product)
+        profile.wishes.add(product)
 
     @staticmethod
     def remove(profile, product):
         """ WishList에 있는 상품을 제거하는 함수 """
-        if profile.wish.filter(id=product.id).exists():
+        if not profile.wishes.filter(id=product.id).exists():
             raise RelationDoesNotExistException()
-        profile.wish.remove(product)
+        profile.wishes.remove(product)
 
 
 class Basket(models.Model):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='+')
-    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='+')
+    custom_product = models.ForeignKey('products.CustomProduct', on_delete=models.CASCADE, related_name='+')
     amount = models.IntegerField(default=1)
     is_purchase = models.BooleanField(default=False)
 
     @staticmethod
-    def add(profile, product):
+    def add(profile, custom_product):
         """ Basket에 새로운 상품을 추가하는 함수 """
-        if profile.basket.filter(id=product.id).exists():
+        if Basket.objects.filter(profile=profile, custom_product=custom_product).exists():
             raise RelationAlreadyExistException()
-        profile.basket.add(product)
+        profile.baskets.add(custom_product)
 
     @staticmethod
-    def remove(profile, product):
+    def remove(profile, custom_product):
         """ Basket에 있는 상품을 제거하는 함수 """
-        if not profile.basket.filter(id=product.id).exists():
+        if not Basket.objects.filter(profile=profile, custom_product=custom_product).exists():
             raise RelationDoesNotExistException()
-        profile.basket.remove(product)
+        profile.baskets.remove(custom_product)
 
     def purchase(self, amount: int):
         """ Basket에 담긴 상품을 구매하는 함수 """

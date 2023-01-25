@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.core.cache import cache
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
@@ -38,7 +40,36 @@ class Product(models.Model):
     brand = models.ForeignKey('products.Brand', on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey('products.SubCategory', on_delete=models.CASCADE)
     backdrop_image = models.ImageField(upload_to='product/%Y-%m', null=True, blank=True)
+    tags = models.ManyToManyField('products.HashTag', blank=True, related_name='products')
+    rendering = models.FileField(upload_to='product/3d', null=True)
     price = models.IntegerField()
+
+    default_svg = models.TextField()
+
+    def __str__(self):
+        return self.name
+
+    def save(
+            self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        super().save(force_insert, force_update, using, update_fields)
+        cache.delete(f'product_{self.id}')
+
+    def delete(self, using=None, keep_parents=False):
+        cache.delete(f'product_{self.id}')
+        super().delete(using, keep_parents)
+
+
+class ProductViewCount(BaseModel):
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='view_count')
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.SET_NULL, null=True)
+
+
+class HashTag(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Discount(models.Model):
@@ -62,8 +93,8 @@ class Color(models.Model):
     hashcode = models.CharField(max_length=7)
 
 
-class ProductImages(models.Model):
-    product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
+class ProductImage(models.Model):
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='images')
     kind = models.CharField(max_length=10)
     image = models.ImageField(upload_to='product/images/%Y-%m')
 
@@ -73,3 +104,24 @@ class Review(BaseModel):
     order_product = models.OneToOneField('orders.OrderProduct', on_delete=models.CASCADE)
     star = models.SmallIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(10)])
     comment = models.TextField(null=True, blank=True)
+
+
+class Content(models.Model):
+    title = models.CharField(max_length=100)
+    path = models.CharField(max_length=50)
+
+    @property
+    def url(self):
+        return f'{settings.BASE_BACKEND_URL}{self.path}'
+
+
+class CustomProduct(BaseModel):
+    product = models.ForeignKey('products.Product', on_delete=models.CASCADE, related_name='custom_products')
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='custom_products')
+    image = models.TextField()
+
+
+class CustomImage(models.Model):
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='custom_images')
+    image = models.ImageField(upload_to='custom_product/%Y-%m', null=True)
+    is_remove = models.BooleanField(default=False)

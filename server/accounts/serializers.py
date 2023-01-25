@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 from accounts.models import Address, Profile, Point, Notify, Platform, Basket, WishList
-from products.models import Review, Product
-from products.serializers import ProductSimpleSerializer
+from products.models import Review
+from products.serializers import ProductSimpleSerializer, CustomProductSerializer
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -86,25 +86,11 @@ class WishListSerializer(serializers.ModelSerializer):
 
 
 class BasketSerializer(serializers.ModelSerializer):
-    product = ProductSimpleSerializer(read_only=True)
+    custom_product = CustomProductSerializer(read_only=True)
 
     class Meta:
         model = Basket
-        fields = ['product', 'amount', 'is_purchase']
-
-
-class BasketPurchaseSerializer(serializers.Serializer):
-    product = serializers.IntegerField()
-    amount = serializers.IntegerField()
-
-    def validate(self, attrs):
-        if not Product.objects.filter(pk=attrs['product']).exists():
-            raise serializers.ValidationError("상품이 존재하지 않습니다.")
-
-        if not Basket.objects.filter(product_id=attrs['product'], profile=self.context['profile']).exists():
-            raise serializers.ValidationError("장바구니에 상품이 존재하지 않습니다.")
-
-        return attrs
+        fields = ['id', 'custom_product', 'amount', 'is_purchase']
 
 
 class ProfileSimpleSerializer(serializers.ModelSerializer):
@@ -114,8 +100,8 @@ class ProfileSimpleSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    backdrop_image = serializers.ImageField(use_url=True, allow_empty_file=True)
-    profile_image = serializers.ImageField(use_url=True, allow_empty_file=True)
+    backdrop_image = serializers.ImageField(use_url=True, allow_empty_file=True, allow_null=True)
+    profile_image = serializers.ImageField(use_url=True, allow_empty_file=True, allow_null=True)
     nickname = serializers.CharField(allow_blank=True)
     name = serializers.CharField(allow_blank=True)
     phone_number = serializers.CharField(allow_blank=True)
@@ -127,7 +113,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['id', 'backdrop_image', 'profile_image', 'nickname', 'name', 'phone_number',
-                  'email', 'social_link', 'description', 'platforms']
+                  'email', 'social_link', 'description', 'platforms', 'point']
 
 
 class ReviewListSerializer(serializers.ModelSerializer):

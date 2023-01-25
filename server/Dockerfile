@@ -1,13 +1,13 @@
-FROM python:3.10
+FROM ubuntu:22.04
 
 COPY . .
 
-RUN apt update && apt install -y
-RUN pip install virtualenv
-RUN virtualenv .venv
+RUN apt-get update -y && apt-get upgrade -y
+RUN apt-get install -y python3.10 python3-pip virtualenv
+RUN virtualenv .venv --python=python3.10
 RUN . .venv/bin/activate
 
-RUN pip install -r requirements/dev.txt
-RUN python3 manage.py collectstatic --noinput
+RUN pip3 install -r requirements/prod.txt
+#RUN python3 manage.py collectstatic --noinput --settings=server.settings.staging
 
-EXPOSE 8000
+EXPOSE 80

@@ -1,3 +1,4 @@
+from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -23,41 +24,12 @@ class BranduFollowViewSet(BranduBaseViewSet):
 
     def get_permissions(self):
         permission_classes = self.permission_classes
-        if self.action == 'retrieve':
+        if self.action == 'follow_list':
             permission_classes = [AllowAny]
         return [permission() for permission in permission_classes]
 
-    def retrieve(self, request, pk=None, *args, **kwargs):
-        status_code = status.HTTP_200_OK
-        is_success = True
-
-        try:
-            profile = self.get_profile(pk=pk)
-            response = {
-                'follower': self.serializer_class(profile.followers.all(), many=True).data,
-                'following': self.serializer_class(profile.following.all(), many=True).data
-            }
-
-        except Profile.DoesNotExist:
-            status_code = status.HTTP_404_NOT_FOUND
-            is_success = False
-            response = {
-                'code': 404,
-                'message': 'Profile does not exist'
-            }
-        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
-
-    def list(self, request, *args, **kwargs):
-        status_code = status.HTTP_200_OK
-        is_success = True
-        profile: Profile = self.profile
-        response = {
-            'follower': self.serializer_class(profile.followers.all(), many=True).data,
-            'following': self.serializer_class(profile.following.all(), many=True).data
-        }
-        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
-
-    @action(detail=True, methods=['POST'], description='팔로우 추가')
+    @swagger_auto_schema(request_body=no_body)
+    @action(detail=False, methods=['POST'], url_path='(?P<pk>[0-9]+)', description='팔로우 추가')
     def follow(self, request, pk=None, *args, **kwargs):
         status_code = status.HTTP_201_CREATED
         is_success = True
@@ -115,4 +87,27 @@ class BranduFollowViewSet(BranduBaseViewSet):
                 'message': str(e.default_detail)
             }
 
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @follow.mapping.get
+    def follow_list(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        try:
+            profile = self.get_profile(pk=pk)
+            response = {
+                'follower': profile.followers.count(),
+                'followers': self.serializer_class(profile.followers.all(), many=True).data,
+                'following': profile.following.count(),
+                'followings': self.serializer_class(profile.following.all(), many=True).data
+            }
+
+        except Profile.DoesNotExist:
+            status_code = status.HTTP_404_NOT_FOUND
+            is_success = False
+            response = {
+                'code': 404,
+                'message': 'Profile does not exist'
+            }
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)

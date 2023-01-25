@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from accounts.models import Notify, Basket, Profile
+from accounts.models import Notify, Basket, Profile, Point
 
 
 @admin.register(Profile)
@@ -15,4 +15,9 @@ class NotifyAdmin(admin.ModelAdmin):
 
 @admin.register(Basket)
 class BasketAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Point)
+class PointAdmin(admin.ModelAdmin):
     pass

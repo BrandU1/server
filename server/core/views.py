@@ -1,8 +1,14 @@
 from django.db.models import QuerySet, Model
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from accounts.models import Profile
+
+
+class BranduLimitOffsetPagination(LimitOffsetPagination):
+    default_limit = 5
 
 
 class BranduBaseViewSet(GenericViewSet):
@@ -19,6 +25,12 @@ class BranduBaseViewSet(GenericViewSet):
     @property
     def profile(self) -> Profile:
         return self.get_authenticate_profile()
+
+    def create_pagination(self, queryset: QuerySet, serializer) -> Response:
+        paginator = BranduLimitOffsetPagination()
+        paginated_queryset = paginator.paginate_queryset(queryset, self.request)
+        serializer = serializer(paginated_queryset, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def get_queryset(self) -> QuerySet:
         queryset = self.queryset
@@ -39,20 +51,24 @@ class BranduBaseViewSet(GenericViewSet):
 
         return queryset
 
-    def perform_create(self, serializer, *args, **kwargs) -> None:
-        if self.login_required:
-            serializer.save(profile=self.profile, **kwargs)
-        serializer.save(**kwargs)
+    def perform_create(self, serializer, login_required=False, *args, **kwargs):
+        if self.login_required or login_required:
+            return serializer.save(profile=self.profile, **kwargs)
+        return serializer.save(**kwargs)
 
     def perform_destroy(self, instance) -> None:
-        if hasattr(instance, 'is_deleted'):
-            instance.is_deleted = True
-            instance.save()
+        if hasattr(self.model, 'not_deleted'):
+            if isinstance(instance, QuerySet):
+                instance.update(is_deleted=True)
+            else:
+                instance.is_deleted = True
+                instance.save()
         else:
             instance.delete()
 
     def get_serializer_context(self) -> dict:
         context = super().get_serializer_context()
+        context.update({'request': self.request})
         if getattr(self, 'swagger_fake_view', False):
             return context
         if self.login_required:

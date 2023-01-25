@@ -1,3 +1,5 @@
+import base64
+import json
 import os
 from datetime import datetime
 from random import randint
@@ -5,6 +7,8 @@ from random import randint
 import requests
 from django.db import models
 
+from core.exceptions.order import OrderAlreadyConfirmException, OrderPaymentAlreadyConfirmException, \
+    OrderPaymentPriceNotEqualException, TossPaymentException
 from core.mixins import BaseModel
 
 
@@ -19,6 +23,13 @@ def generate_order_number():
     return f'{year}{month}-{day}{hour}{minute}-{random_number}'
 
 
+def encrypt_secret_key(key: str):
+    secret_key = f'{key}:'
+    bytes_key = secret_key.encode('UTF-8')
+    base64_bytes = base64.b64encode(bytes_key)
+    return base64_bytes.decode('UTF-8')
+
+
 class Order(BaseModel):
     profile = models.ForeignKey('accounts.Profile', on_delete=models.SET_NULL, null=True, related_name='orders')
     address = models.ForeignKey('accounts.Address', on_delete=models.SET_NULL, blank=True, null=True)
@@ -28,6 +39,7 @@ class Order(BaseModel):
     used_point = models.IntegerField(default=0)
     price = models.IntegerField()
     method = models.CharField(max_length=20)
+    order_status = models.CharField(max_length=20, default='결제 대기')
     is_payment_confirm = models.BooleanField(default=False)
     is_confirm = models.BooleanField(default=False)
 
@@ -47,15 +59,52 @@ class Order(BaseModel):
             method=method
         )
 
-    def confirm_order(self) -> None:
-        self.is_confirm = True
-        self.save()
+    def toss_payment_create(self, payment_key: str, order_id: str, amount: int):
+        if self.is_payment_confirm:
+            raise OrderPaymentAlreadyConfirmException()
 
-    @property
-    def status(self):
+        if self.price != int(amount):
+            raise OrderPaymentPriceNotEqualException()
+        request = requests.post(
+            'https://api.tosspayments.com/v1/payments/confirm',
+            headers={
+                'Authorization': f'Basic {encrypt_secret_key(os.environ.get("TOSSPAYMENT_SECRET_KEY"))}',
+                'Content-Type': 'application/json',
+            }, data=json.dumps({
+                'paymentKey': payment_key,
+                'orderId': order_id,
+                'amount': amount,
+            })
+        )
+
+        if request.status_code != 200:
+            error = request.json()
+            raise TossPaymentException(
+                status_code=request.status_code,
+                message=error.get('message'),
+                code=error.get('code')
+            )
+
+        data = request.json()
+        self.is_payment_confirm = True
+        order = Order.objects.get(order_number=order_id)
+        order.order_status = "결제 완료"
+        order.save()
+        return Payment.objects.create(
+            order=self,
+            platform='TOSS',
+            price=amount,
+            name=data.get('name', self.name),
+            payment_key=payment_key,
+            method=data.get('method', self.method),
+            recipient_url=data.get('receipt').get('url')
+        )
+
+    def confirm_order(self) -> None:
         if self.is_confirm:
-            return 'confirm'
-        return self.delivery.status
+            raise OrderAlreadyConfirmException()
+        self.is_confirm = True
+        self.save(update_fields=['is_confirm'])
 
     def __str__(self):
         return f'{self.name}/{self.order_number}'
@@ -63,10 +112,11 @@ class Order(BaseModel):
 
 class OrderProduct(models.Model):
     order = models.ForeignKey('orders.Order', on_delete=models.CASCADE, related_name='products')
-    product = models.ForeignKey('products.Product', on_delete=models.SET_NULL, null=True)
+    product = models.ForeignKey('products.CustomProduct', on_delete=models.SET_NULL, null=True)
     count = models.IntegerField(default=1)
-    option = models.ForeignKey('products.ProductOption', on_delete=models.SET_NULL, null=True)
-    discount = models.ForeignKey('products.Discount', on_delete=models.SET_NULL, null=True)
+    option = models.ForeignKey('products.ProductOption', on_delete=models.SET_NULL, blank=True, null=True)
+    discount = models.ForeignKey('products.Discount', on_delete=models.SET_NULL, blank=True, null=True)
+    is_review_written = models.BooleanField(default=False)
 
 
 class Payment(BaseModel):
@@ -75,6 +125,7 @@ class Payment(BaseModel):
     price = models.IntegerField()
     name = models.CharField(max_length=200)
     payment_key = models.CharField(max_length=50)
+    recipient_url = models.URLField()
     method = models.CharField(max_length=10)
 
 

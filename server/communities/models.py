@@ -1,49 +1,44 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.db.models import UniqueConstraint, Deferrable
 
+from core.exceptions.product import RelationAlreadyExistException, RelationDoesNotExistException
 from core.mixins import BaseModel
 
 
 class Post(BaseModel):
-    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
-    title = models.CharField(max_length=200)
-    backdrop_image = models.ImageField(upload_to='community/backdrop/%Y-%m', null=True)
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='posts')
+    title = models.CharField(max_length=50)
+    content = models.TextField()
+    backdrop_image = models.URLField(null=True, blank=True)
     hits = models.PositiveIntegerField(default=1)
+    tags = models.ManyToManyField('communities.PostTag', blank=True, related_name='posts')
+    likes = models.ManyToManyField('accounts.Profile', blank=True, related_name='post_likes')
 
-    @property
-    def contents(self):
-        return self.content_set.all().order_by('-priority')
+    def like(self, profile):
+        if self.likes.filter(id=profile.id).exists():
+            raise RelationAlreadyExistException()
+        self.likes.add(profile)
 
-
-class Content(BaseModel):
-    post = models.ForeignKey('communities.Post', on_delete=models.CASCADE)
-    priority = models.SmallIntegerField(default=1, validators=[MinValueValidator(1), MaxValueValidator(10)])
-    description = models.TextField(null=True)
-
-    class Meta:
-        constraints = [
-            UniqueConstraint(fields=['post', 'priority'], name='unique_content_priority',
-                             deferrable=Deferrable.DEFERRED),
-        ]
+    def unlike(self, profile):
+        if not self.likes.filter(id=profile.id).exists():
+            raise RelationDoesNotExistException()
+        self.likes.remove(profile)
 
 
-class ContentImage(models.Model):
-    content = models.ForeignKey('communities.Content', on_delete=models.CASCADE)
+class PostViewCount(BaseModel):
+    post = models.ForeignKey('communities.Post', on_delete=models.CASCADE, related_name='view_count')
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
+
+
+class PostImage(models.Model):
     image = models.ImageField(upload_to='community/%Y-%m')
-    tag = models.ForeignKey('communities.Tag', on_delete=models.CASCADE)
 
 
-class Tag(models.Model):
+class PostTag(models.Model):
     name = models.CharField(max_length=30, unique=True)
 
 
 class Comment(BaseModel):
-    post = models.ForeignKey('communities.Post', on_delete=models.CASCADE)
+    post = models.ForeignKey('communities.Post', on_delete=models.CASCADE, related_name='comments')
     profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
     replies = models.ManyToManyField('self')
-    comment = models.CharField(max_length=500)
-
-
-class Review(BaseModel):
-    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='community_review_set')
+    comment = models.TextField()

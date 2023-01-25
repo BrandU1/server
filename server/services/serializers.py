@@ -1,7 +1,5 @@
-from django.core.files.base import ContentFile
 from rest_framework import serializers
 
-from accounts.models import Profile
 from services.models import Notice, Inquiry, FAQ, MainInfo, InquiryImage
 
 
@@ -32,29 +30,29 @@ class InquiryImageSerializer(serializers.ModelSerializer):
 
 
 class InquirySerializer(serializers.ModelSerializer):
-    images = InquiryImageSerializer(many=True, source='inquiryimage_set', required=False)
+    images = InquiryImageSerializer(many=True, required=False)
 
     class Meta:
         model = Inquiry
         fields = ['id', 'title', 'description', 'images', 'created', 'is_answer']
+        extra_kwargs = {
+            'is_answer': {'read_only': True},
+        }
 
     def create(self, validated_data):
-        request = self.context.get("request", None)
-        images = request.data.getlist('images')
-        profile = Profile.get_profile_or_exception(request.user.profile.id)
-        inquiry = Inquiry.objects.create(profile=profile, **validated_data)
-        for idx, image in enumerate(images):
-            inquiry_image = InquiryImage(inquiry=inquiry)
-            inquiry_image.image.save(f'{inquiry.id}-{idx}.png', image)
+        images = validated_data.pop('images', None)
+        inquiry = Inquiry.objects.create(**validated_data)
+        if not images:
+            return inquiry
+        inquiry.images.set(map(lambda image: InquiryImage.objects.create(inquiry=inquiry, image=image), images))
         return inquiry
 
     def update(self, instance: Inquiry, validated_data):
-        request = self.context.get("request", None)
-        images = request.data.getlist('images')
-        instance.objects.update(**validated_data)
-        instance.inquiryimage_set.all().delete()
-        for image in images:
-            serializer = InquiryImageSerializer(data={'image': image})
-            if serializer.is_valid():
-                serializer.save()
+        images = validated_data.pop('images', None)
+        instance.save({
+            validated_data
+        })
+        if not images:
+            return instance
+        instance.images.set(map(lambda image: InquiryImage.objects.create(inquiry=instance, image=image), images))
         return instance

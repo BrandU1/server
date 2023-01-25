@@ -4,16 +4,28 @@ from rest_framework.exceptions import ValidationError
 from accounts.models import Profile
 from accounts.serializers import AddressSerializer
 from orders.models import Order, OrderProduct, Payment, Delivery, DeliveryTracking
+from products.serializers import CustomProductSerializer
 
 
 class OrderProductSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='order_product_id', read_only=True)
+    order = serializers.IntegerField(source='id', read_only=True)
+    product = serializers.IntegerField(read_only=True)
+    created = serializers.DateTimeField()
+
     class Meta:
         model = OrderProduct
-        fields = ['id', 'order', 'product', 'count']
+        fields = ['id', 'order', 'product', 'count', 'created']
+
+
+class OrderProductsSerializer(serializers.Serializer):
+    product = serializers.IntegerField()
+    count = serializers.IntegerField()
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     coupon = serializers.IntegerField(required=False, allow_null=True)
+    products = OrderProductsSerializer(many=True)
 
     class Meta:
         model = Order
@@ -28,10 +40,10 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: dict) -> Order:
         products = validated_data.pop('products')
-        user = self.context.get("request").user
-        profile = Profile.get_profile_or_exception(user.profile.id)
-        order = Order.objects.create(profile=profile, **validated_data)
-        order.products.set([OrderProduct.objects.create(order=order, **product) for product in products])
+        order = Order.objects.create(profile=self.context.get('profile'), **validated_data)
+        order.products.set([OrderProduct.objects.create(
+            order=order, product_id=product['product'], count=product['count']
+        ) for product in products])
         return order
 
 
@@ -41,12 +53,25 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id', 'products', 'address', 'created', 'name', 'order_number',
-                  'status', 'used_point', 'price', 'method', 'is_confirm', 'is_payment_confirm', 'coupon']
+                  'order_status', 'used_point', 'price', 'method', 'is_confirm', 'is_payment_confirm', 'coupon']
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['products'] = [
+            OrderProductSerializer(product).data for product in instance.products.all()
+        ]
+        return ret
+
+
+class OrderProductSerializer(serializers.ModelSerializer):
+    product = CustomProductSerializer()
+
+    class Meta:
+        model = OrderProduct
+        fields = '__all__'
 
 
 class PaymentSerializer(serializers.ModelSerializer):
-    order = OrderSerializer()
-
     class Meta:
         model = Payment
         fields = '__all__'

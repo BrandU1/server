@@ -1,12 +1,8 @@
-import operator
-
 from django.db.models import Count
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.generics import ListAPIView
-from datetime import date
-
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -18,6 +14,16 @@ from products.models import Product
 from products.serializers import ProductSerializer
 from search.models import Search
 from search.serializers import SearchSerializer, SearchRankSerializer
+
+
+def search_rank() -> None:
+    search_ranks = Search.objects.values(
+        'search_word'
+    ).annotate(
+        count=Count('search_word')
+    ).order_by('-count')[:11]
+    print(search_ranks)
+    # cache.set('search_ranks', search_ranks, 60 * 5)
 
 
 class SearchListAPIView(ListAPIView):
@@ -38,7 +44,6 @@ class SearchListAPIView(ListAPIView):
         query = self.request.query_params.get('query', None)
         if query is None:
             raise Exception('')
-
         if self.request.user and self.request.user.is_authenticated:
             profile = self.request.user.profile
             search_words = Search.objects.filter(profile=profile, search_word=query)

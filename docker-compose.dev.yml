@@ -1,0 +1,43 @@
+version: "3.7"
+
+services:
+  django:
+    container_name: django-dev
+    build: server
+    command: gunicorn --bind 0.0.0.0:8000 --access-logfile /logs/access.log --error-logfile /logs/error.log server.wsgi.local:application
+    volumes:
+      - logs:/logs
+      - media:/media
+      - static:/static
+    env_file:
+      - server/.env
+    environment:
+      - ENV=local
+    expose:
+      - "8000"
+
+  nginx:
+    container_name: nginx-dev
+    build: nginx
+    volumes:
+      - media:/media
+      - static:/static
+    ports:
+      - "80:80"
+    depends_on:
+      - django
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --port 6379
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis:/data
+
+volumes:
+  media:
+  static:
+  logs:
+  redis:

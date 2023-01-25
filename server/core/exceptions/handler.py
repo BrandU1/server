@@ -1,6 +1,7 @@
 from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.views import exception_handler
+
+from core.response import brandu_standard_response
 
 
 def custom_exception_handler(exc, context):
@@ -23,10 +24,10 @@ def custom_exception_handler(exc, context):
 
 
 def _handle_generic_error(exc, context, response):
-    data = {
-        "success": "0",
-        "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-        "results": "서버 에러 입니다. 관리자에게 문의 주세요.",
-        "detail": exc.args[0],
+    is_success = False
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    response = {
+        "code": exc.__class__.__name__,
+        "message": str(exc),
     }
-    return Response(data)
+    return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)

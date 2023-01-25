@@ -1,7 +1,11 @@
 from rest_framework import serializers
 
-from accounts.models import Profile, WishList, Basket
-from products.models import Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color
+from accounts.models import Profile
+from products.models import (
+    Product, MainCategory, SubCategory, Review, Brand, ProductOption, Color, ProductImage,
+    Content, HashTag, CustomProduct, CustomImage
+)
+from utils.remove import remove_background
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -28,7 +32,6 @@ class MainCategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSimpleSerializer(serializers.ModelSerializer):
-    backdrop_image = serializers.ImageField(use_url=True)
     is_wish = serializers.SerializerMethodField()
 
     class Meta:
@@ -40,7 +43,22 @@ class ProductSimpleSerializer(serializers.ModelSerializer):
         if request is None or request.user.is_anonymous:
             return False
         profile = Profile.get_profile_or_exception(request.user.profile.id)
-        return WishList.objects.filter(product_id=obj.pk, profile=profile).exists()
+        return profile.wishes.filter(id=obj.pk).exists()
+
+
+class ProductHashTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HashTag
+        fields = ['id', 'name']
+
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['kind', 'image']
+        extra_kwargs = {
+            'image': {'use_url': True},
+        }
 
 
 class ColorSerializer(serializers.ModelSerializer):
@@ -58,8 +76,9 @@ class ProductOptionSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    brand = BrandSerializer(read_only=True)
-    category = SubCategorySerializer()
+    brand = BrandSerializer()
+    tags = ProductHashTagSerializer(many=True)
+    images = ProductImageSerializer(many=True)
     options = ProductOptionSerializer(many=True)
     is_wish = serializers.SerializerMethodField()
     is_basket = serializers.SerializerMethodField()
@@ -73,14 +92,14 @@ class ProductSerializer(serializers.ModelSerializer):
         if request is None or request.user.is_anonymous:
             return False
         profile = Profile.get_profile_or_exception(request.user.profile.id)
-        return WishList.objects.filter(product_id=obj.pk, profile=profile).exists()
+        return profile.wishes.filter(id=obj.pk).exists()
 
-    def get_is_basket(self, obj):
+    def get_is_basket(self, obj) -> bool:
         request = self.context.get("request", None)
         if request is None or request.user.is_anonymous:
             return False
         profile = Profile.get_profile_or_exception(request.user.profile.id)
-        return Basket.objects.filter(product_id=obj.pk, profile=profile).exists()
+        return profile.baskets.filter(id=obj.pk).exists()
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -96,3 +115,38 @@ class ReviewSerializer(serializers.ModelSerializer):
         if not profile.orders.prefetch_related('products__product').filter(products__product=value).exists():
             raise serializers.ValidationError("해당 상품을 구매한 내역이 없습니다.")
         return value
+
+
+class ContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Content
+        fields = ['title', 'url']
+
+
+class CustomProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomProduct
+        fields = ['id', 'product', 'profile', 'image']
+        read_only_fields = ['profile']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['product'] = ProductSimpleSerializer(instance.product).data
+        return data
+
+
+class CustomImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomImage
+        fields = ['id', 'profile', 'image', 'is_remove']
+        read_only_fields = ['profile', 'is_remove']
+
+    def create(self, validated_data):
+        is_remove = validated_data.pop('is_remove')
+        if not is_remove:
+            return super().create(validated_data)
+        image = validated_data.pop('image')
+        profile = validated_data.pop('profile')
+        new = remove_background(image, profile)
+        instance = CustomImage.objects.create(profile=profile, image=new)
+        return instance

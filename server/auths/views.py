@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import check_password
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import api_view
@@ -88,3 +89,19 @@ def generate_token(request):
         'refresh_token': str(token),
         'access_token': str(token.access_token)
     })
+
+
+class TestLoginAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        username = self.request.data['username']
+        password = self.request.data['password']
+        user = User.objects.get(username=username)
+        if check_password(password, user.password):
+            token = TokenObtainPairSerializer.get_token(user)
+            return Response({
+                'refresh_token': str(token),
+                'access_token': str(token.access_token)
+            })
+        return Response({
+
+        })
