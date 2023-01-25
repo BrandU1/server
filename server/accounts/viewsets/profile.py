@@ -317,3 +317,15 @@ class BranduProfileViewSet(BranduBaseViewSet):
         response = serializer.data
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
+    def posts(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        profile = get_object_or_404(Profile, pk=pk)
+        posts = profile.posts.all()
+        serializer = PostSimpleSerializer(posts, many=True)
+        response = serializer.data
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)

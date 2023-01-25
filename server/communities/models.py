@@ -5,7 +5,7 @@ from core.mixins import BaseModel
 
 
 class Post(BaseModel):
-    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
+    profile = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE, related_name='posts')
     title = models.CharField(max_length=50)
     content = models.TextField()
     backdrop_image = models.URLField(null=True, blank=True)
