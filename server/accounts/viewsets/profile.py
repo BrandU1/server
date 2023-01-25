@@ -318,6 +318,27 @@ class BranduProfileViewSet(BranduBaseViewSet):
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
+    @customs.mapping.post
+    def customs_create(self, request, *args, **kwargs):
+        status_code = status.HTTP_201_CREATED
+        is_success = True
+
+        try:
+            serializer = CustomImageSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(profile=self.profile, is_remove=False)
+            response = serializer.data
+
+        except ValidationError as e:
+            status_code = e.status_code
+            is_success = False
+            response = {
+                'code': e.status_code,
+                'message': e.default_detail
+            }
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
     @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
     def posts(self, request, pk=None, *args, **kwargs):
         status_code = status.HTTP_200_OK

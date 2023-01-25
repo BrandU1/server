@@ -16,26 +16,6 @@ class BranduCustomImageViewSet(BranduBaseViewSet):
     permission_classes = [IsAuthenticated]
     login_required = True
 
-    def create(self, request, *args, **kwargs):
-        status_code = status.HTTP_201_CREATED
-        is_success = True
-
-        try:
-            serializer = self.serializer_class(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(profile=self.profile, is_remove=False)
-            response = serializer.data
-
-        except ValidationError as e:
-            status_code = e.status_code
-            is_success = False
-            response = {
-                'code': e.status_code,
-                'message': e.default_detail
-            }
-
-        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
-
     @action(detail=False, methods=['POST'])
     def remove(self, request, *args, **kwargs):
         status_code = status.HTTP_201_CREATED
