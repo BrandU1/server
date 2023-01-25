@@ -2,6 +2,7 @@ from django.db.models import QuerySet
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny
 
 from core.response import brandu_standard_response
@@ -25,9 +26,9 @@ class BranduServiceViewSet(BranduBaseViewSet):
         return super(BranduServiceViewSet, self).get_queryset()
 
     def get_serializer_class(self):
-        if self.action == 'notices':
+        if self.action == 'notices' or self.action == 'notices_detail':
             return NoticeSerializer
-        elif self.action == 'main-infos':
+        elif self.action == 'main_infos' or self.action == 'main_infos_detail':
             return MainInfoSerializer
         return self.serializer_class
 
@@ -72,6 +73,17 @@ class BranduServiceViewSet(BranduBaseViewSet):
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
+    @action(detail=False, methods=['GET'], url_path='notices/(?P<pk>[0-9]+)')
+    def notices_detail(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        notice = get_object_or_404(Notice, pk=pk)
+        serializer = self.get_serializer(notice)
+        response = serializer.data
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
     @action(detail=False, methods=['GET'])
     def main_infos(self, request, *args, **kwargs):
         status_code = status.HTTP_200_OK
@@ -83,6 +95,17 @@ class BranduServiceViewSet(BranduBaseViewSet):
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
 
+    @action(detail=False, methods=['GET'], url_path='main_infos/(?P<pk>[0-9]+)')
+    def main_infos_detail(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        main_info = get_object_or_404(MainInfo, pk=pk)
+        serializer = self.get_serializer(main_info)
+        response = serializer.data
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
     @action(detail=False, methods=['GET'])
     def faqs(self, request, *args, **kwargs):
         status_code = status.HTTP_200_OK
@@ -90,6 +113,17 @@ class BranduServiceViewSet(BranduBaseViewSet):
 
         faqs = self.get_queryset()
         serializer = self.get_serializer(faqs, many=True)
+        response = serializer.data
+
+        return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
+
+    @action(detail=False, methods=['GET'], url_path='faqs/(?P<pk>[0-9]+)')
+    def faqs_detail(self, request, pk=None, *args, **kwargs):
+        status_code = status.HTTP_200_OK
+        is_success = True
+
+        faq = get_object_or_404(FAQ, pk=pk)
+        serializer = self.get_serializer(faq)
         response = serializer.data
 
         return brandu_standard_response(is_success=is_success, response=response, status_code=status_code)
